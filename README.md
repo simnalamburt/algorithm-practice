@@ -1,7 +1,7 @@
-알고리즘 연습
+Algorithm practice
 ========
 
-신나는 알고리즘 타임
+My competitive programming practice.
 
 <br>
 

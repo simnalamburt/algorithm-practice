@@ -2,11 +2,11 @@ CLOCKSYNC
 ========
 
 ```bash
-# 루비 naive
-./naive-ruby < input1 # 17s
-./naive-ruby < input2 # 8s
+# Ruby naive
+./naive-ruby < input1
+./naive-ruby < input2
 
-# 러스트 naive
+# Rust naive
 rustc naive.rs
 ./naive < input1
 ./naive < input2

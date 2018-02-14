@@ -1,0 +1,85 @@
+#!/usr/bin/env ruby
+require 'matrix'
+
+SWITCH = [
+  Vector[1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  Vector[0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0],
+  Vector[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1],
+  Vector[1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+  Vector[0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0],
+  Vector[1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+  Vector[0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1],
+  Vector[0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1],
+  Vector[0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  Vector[0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+]
+
+DESIRED = Vector[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+
+def solve(input)
+  state = Vector.elements(input.map { |e| e/4 })
+
+  min = Float::INFINITY
+
+  for i0 in 0...4
+    a0 = state + SWITCH[0]*i0
+
+    for i1 in 0...4
+      a1 = a0 + SWITCH[1]*i1
+
+      for i2 in 0...4
+        a2 = a1 + SWITCH[2]*i2
+
+        for i3 in 0...4
+          a3 = a2 + SWITCH[3]*i3
+
+          for i4 in 0...4
+            a4 = a3 + SWITCH[4]*i4
+
+            for i5 in 0...4
+              a5 = a4 + SWITCH[5]*i5
+
+              for i6 in 0...4
+                a6 = a5 + SWITCH[6]*i6
+
+                for i7 in 0...4
+                  a7 = a6 + SWITCH[7]*i7
+
+                  for i8 in 0...4
+                    a8 = a7 + SWITCH[8]*i8
+
+                    for i9 in 0...4
+                      a9 = a8 + SWITCH[9]*i9
+
+                      try = a9.map { |e| e % 4 }
+
+                      next if not (DESIRED == try)
+
+                      count = i0 + i1 + i2 + i3 + i4 + i5 + i6 + i7 + i8 + i9
+
+                      if min > count
+                        min = count
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  if min == Float::INFINITY
+    return -1
+  else
+    return min
+  end
+end
+
+count = gets.chomp.to_i
+count.times do
+  input = gets.chomp.split.map(&:to_i)
+  puts(solve(input))
+end

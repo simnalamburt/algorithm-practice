@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+def solve(input)
+
+  # TODO
+  10
+end
+
+count = gets.chomp.to_i
+count.times do
+  input = gets.chomp.split.map(&:to_i)
+  puts solve(input)
+end

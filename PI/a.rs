@@ -1,4 +1,3 @@
-/*
 fn main() {
     use std::io::{self, BufRead};
 
@@ -13,18 +12,28 @@ fn main() {
     let count = read_line().trim_right().parse().unwrap();
     for _ in 0..count {
         let digits: Vec<u8> = read_line().trim_right().chars().map(|e| e.to_digit(10).unwrap() as u8).collect();
-        let result = solve(digits);
+        let result = solve(&digits);
 
         println!("{:?}", result);
     }
 }
 
-fn solve(digits: Vec<u8>) -> u32 {
-    println!("{:?}", digits);
+fn solve(digits: &[u8]) -> u32 {
+    let len = digits.len();
+    match len {
+        0...2  => panic!("solve() 함수 인자의 길이는 항상 3보다 커야합니다. (입력된 조각의 길이: {})", len),
+        3 | 4 | 5 => eval(digits),
+        _ => {
+            let next: &[usize] = match len {
+                6 => &[3],
+                7 => &[3, 4],
+                _ => &[3, 4, 5]
+            };
 
-    42
+            next.iter().map(|&i| eval(&digits[..i]) + solve(&digits[i..])).min().unwrap()
+        }
+    }
 }
-*/
 
 fn eval(digits: &[u8]) -> u32 {
     let len = digits.len();
@@ -56,19 +65,20 @@ fn eval(digits: &[u8]) -> u32 {
     }
 }
 
-fn main() {
-    println!("{}", eval(&[3, 3, 3]));
-    println!("{}", eval(&[5, 5, 5, 5]));
+#[test]
+fn test_eval() {
+    assert_eq!(1, eval(&[3, 3, 3]));
+    assert_eq!(1, eval(&[5, 5, 5, 5]));
 
-    println!("{}", eval(&[2, 3, 4, 5, 6]));
-    println!("{}", eval(&[3, 2, 1, 0]));
+    assert_eq!(2, eval(&[2, 3, 4, 5, 6]));
+    assert_eq!(2, eval(&[3, 2, 1, 0]));
 
-    println!("{}", eval(&[3, 2, 3]));
-    println!("{}", eval(&[5, 4, 5, 4, 5]));
+    assert_eq!(4, eval(&[3, 2, 3]));
+    assert_eq!(4, eval(&[5, 4, 5, 4, 5]));
 
-    println!("{}", eval(&[1, 4, 7]));
-    println!("{}", eval(&[8, 6, 4, 2]));
+    assert_eq!(5, eval(&[1, 4, 7]));
+    assert_eq!(5, eval(&[8, 6, 4, 2]));
 
-    println!("{}", eval(&[1, 7, 9, 1, 2]));
-    println!("{}", eval(&[3, 3, 1]));
+    assert_eq!(10, eval(&[1, 7, 9, 1, 2]));
+    assert_eq!(10, eval(&[3, 3, 1]));
 }

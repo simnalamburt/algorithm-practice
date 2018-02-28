@@ -2,5 +2,9 @@
 ========
 
 ```bash
+# 실행
 rustc a.rs && ./a < input
+
+# 유닛테스트 실행
+rustc --test a.rs && ./a
 ```

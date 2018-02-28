@@ -19,20 +19,38 @@ fn main() {
 }
 
 fn solve(digits: &[u8]) -> u32 {
-    let len = digits.len();
-    match len {
-        0...2  => panic!("solve() 함수 인자의 길이는 항상 3보다 커야합니다. (입력된 조각의 길이: {})", len),
-        3 | 4 | 5 => eval(digits),
-        _ => {
-            let next: &[usize] = match len {
-                6 => &[3],
-                7 => &[3, 4],
-                _ => &[3, 4, 5]
+    use std::collections::HashMap;
+    use std::cell::UnsafeCell;
+
+    let cache = UnsafeCell::new(HashMap::<Vec<u8>, u32>::new());
+
+    struct Try<'a> { f: &'a Fn(&Try, &[u8]) -> u32 };
+    let try = Try {
+
+        f: &|try, digits| {
+            let cache = unsafe { &mut *cache.get() };
+            let key = digits.to_vec();
+
+            if let Some(&value) = cache.get(&key) {
+                return value;
+            }
+
+            let len = digits.len();
+            let value = match len {
+                0...2  => panic!("try() 함수 인자의 길이는 항상 3보다 커야합니다. (입력된 조각의 길이: {})", len),
+                3 | 4 | 5 => eval(digits),
+                _ => (3..std::cmp::min(len-2, 6))
+                        .map(|i| (try.f)(try, &digits[..len - i]) + eval(&digits[len - i..]))
+                        .min()
+                        .unwrap()
             };
 
-            next.iter().map(|&i| solve(&digits[..len - i]) + eval(&digits[len - i..])).min().unwrap()
+            cache.insert(key, value);
+            value
         }
-    }
+
+    };
+    (try.f)(&try, digits)
 }
 
 fn eval(digits: &[u8]) -> u32 {
@@ -55,7 +73,7 @@ fn eval(digits: &[u8]) -> u32 {
         }
     } else {
         let is_alternative = (1..diffs.len()).all(|i| {
-            diffs[0] == if i%2 == 1 { -1 } else { 1 } * diffs[i]
+            diffs[0] == (if i%2 == 1 { -1 } else { 1 } * diffs[i])
         });
 
         match is_alternative {

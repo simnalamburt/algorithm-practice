@@ -11,7 +11,7 @@ fn main() {
 
     let count = read_line().trim_right().parse().unwrap();
     for _ in 0..count {
-        let digits: Vec<u8> = read_line().trim_right().chars().map(|e| e.to_digit(10).unwrap() as u8).collect();
+        let digits: Vec<_> = read_line().trim_right().chars().map(|e| e.to_digit(10).unwrap() as u8).collect();
         let result = solve(&digits);
 
         println!("{:?}", result);
@@ -30,7 +30,7 @@ fn solve(digits: &[u8]) -> u32 {
                 _ => &[3, 4, 5]
             };
 
-            next.iter().map(|&i| eval(&digits[..i]) + solve(&digits[i..])).min().unwrap()
+            next.iter().map(|&i| solve(&digits[..len - i]) + eval(&digits[len - i..])).min().unwrap()
         }
     }
 }

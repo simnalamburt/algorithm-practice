@@ -18,13 +18,15 @@ fn main() {
     }
 }
 
-fn solve(digits: &[u8]) -> u32 {
-    use std::cell::UnsafeCell;
-    use std::cmp::min;
-    use std::u32;
+static mut BUFFER: [u32; 9997] = [0; 9997];
 
-    let buffer = UnsafeCell::new([u32::MAX; 9997]);
-    let get_cache = |index: usize| unsafe { &mut (*buffer.get())[index - 3] };
+fn solve(digits: &[u8]) -> u32 {
+    use std::cmp::min;
+    use std::u32::MAX as uninitialized;
+
+    // 캐시 리셋
+    unsafe { BUFFER = [uninitialized; 9997] }
+    let get_cache = |index: usize| unsafe { &mut BUFFER[index - 3] };
 
     struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
     let try = Try {
@@ -32,7 +34,7 @@ fn solve(digits: &[u8]) -> u32 {
         f: &|try, index| {
             // 캐시에 값이 있는지 먼저 확인
             let value = *get_cache(index);
-            if value != u32::MAX {
+            if value != uninitialized {
                 return value;
             }
 

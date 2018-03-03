@@ -100,3 +100,12 @@ fn test_eval() {
     assert_eq!(10, eval(&[1, 7, 9, 1, 2]));
     assert_eq!(10, eval(&[3, 3, 1]));
 }
+
+#[test]
+fn test_solve() {
+    assert_eq!(4, solve(&[1, 2, 3, 4, 1, 2, 3, 4]));
+    assert_eq!(2, solve(&[1, 1, 1, 1, 1, 2, 2, 2]));
+    assert_eq!(5, solve(&[1, 2, 1, 2, 2, 2, 2, 2]));
+    assert_eq!(2, solve(&[2, 2, 2, 2, 2, 2, 2, 2]));
+    assert_eq!(14, solve(&[1, 2, 6, 7, 3, 9, 3, 9]));
+}

@@ -19,25 +19,26 @@ fn main() {
 }
 
 fn solve(digits: &[u8]) -> u32 {
-    use std::collections::HashMap;
     use std::cell::UnsafeCell;
     use std::cmp::min;
+    use std::u32;
 
-    let cache = UnsafeCell::new(HashMap::<usize, u32>::new());
+    let buffer = UnsafeCell::new([u32::MAX; 9997]);
+    let get_cache = |index: usize| unsafe { &mut (*buffer.get())[index - 3] };
 
     struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
     let try = Try {
 
         f: &|try, index| {
-            let cache = unsafe { &mut *cache.get() };
-            let key = index;
-
-            if let Some(&value) = cache.get(&key) {
+            // 캐시에 값이 있는지 먼저 확인
+            let value = *get_cache(index);
+            if value != u32::MAX {
                 return value;
             }
 
+            // 캐시에 값이 없으면 계산 수행
             let value = match index {
-                0...2  => panic!("try() 함수의 인자 index는 항상 3보다 커야합니다. (현재 index: {})", index),
+                0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
                 3 | 4 | 5 => eval(&digits[..index]),
                 _ => (3..min(index-2, 6))
                         .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
@@ -45,7 +46,8 @@ fn solve(digits: &[u8]) -> u32 {
                         .unwrap()
             };
 
-            cache.insert(key, value);
+            // 캐시 업데이트
+            *get_cache(index) = value;
             value
         }
 

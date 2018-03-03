@@ -21,26 +21,26 @@ fn main() {
 fn solve(digits: &[u8]) -> u32 {
     use std::collections::HashMap;
     use std::cell::UnsafeCell;
+    use std::cmp::min;
 
-    let cache = UnsafeCell::new(HashMap::<Vec<u8>, u32>::new());
+    let cache = UnsafeCell::new(HashMap::<usize, u32>::new());
 
-    struct Try<'a> { f: &'a Fn(&Try, &[u8]) -> u32 };
+    struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
     let try = Try {
 
-        f: &|try, digits| {
+        f: &|try, index| {
             let cache = unsafe { &mut *cache.get() };
-            let key = digits.to_vec();
+            let key = index;
 
             if let Some(&value) = cache.get(&key) {
                 return value;
             }
 
-            let len = digits.len();
-            let value = match len {
-                0...2  => panic!("try() 함수 인자의 길이는 항상 3보다 커야합니다. (입력된 조각의 길이: {})", len),
-                3 | 4 | 5 => eval(digits),
-                _ => (3..std::cmp::min(len-2, 6))
-                        .map(|i| (try.f)(try, &digits[..len - i]) + eval(&digits[len - i..]))
+            let value = match index {
+                0...2  => panic!("try() 함수의 인자 index는 항상 3보다 커야합니다. (현재 index: {})", index),
+                3 | 4 | 5 => eval(&digits[..index]),
+                _ => (3..min(index-2, 6))
+                        .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
                         .min()
                         .unwrap()
             };
@@ -50,7 +50,7 @@ fn solve(digits: &[u8]) -> u32 {
         }
 
     };
-    (try.f)(&try, digits)
+    (try.f)(&try, digits.len())
 }
 
 fn eval(digits: &[u8]) -> u32 {

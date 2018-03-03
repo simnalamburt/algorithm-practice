@@ -18,39 +18,57 @@ fn main() {
     }
 }
 
-static mut BUFFER: [u32; 9997] = [0; 9997];
+mod cache {
+    use std::u32::MAX as uninitialized;
+
+    static mut BUFFER: [u32; 9997] = [uninitialized; 9997];
+
+    pub struct Entry(&'static mut u32);
+
+    pub fn reset() {
+        unsafe { BUFFER = [uninitialized; 9997] }
+    }
+
+    pub fn read(key: usize) -> Entry {
+        Entry(unsafe { &mut BUFFER[key - 3] })
+    }
+
+    impl Entry {
+        pub fn or<F: FnOnce() -> u32>(&mut self, func: F) -> u32 {
+            use std::u32::MAX as BLANK;
+
+            match *self.0 {
+                BLANK => {
+                    let value = func();
+                    *self.0 = value;
+                    value
+                }
+                _ => *self.0
+            }
+        }
+    }
+}
 
 fn solve(digits: &[u8]) -> u32 {
     use std::cmp::min;
-    use std::u32::MAX as uninitialized;
 
     // 캐시 리셋
-    unsafe { BUFFER = [uninitialized; 9997] }
-    let get_cache = |index: usize| unsafe { &mut BUFFER[index - 3] };
+    cache::reset();
 
     struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
     let try = Try {
 
         f: &|try, index| {
-            // 캐시에 값이 있는지 먼저 확인
-            let value = *get_cache(index);
-            if value != uninitialized {
-                return value;
-            }
-
-            // 캐시에 값이 없으면 계산 수행
-            let value = match index {
-                0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
-                3 | 4 | 5 => eval(&digits[..index]),
-                _ => (3..min(index-2, 6))
-                        .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
-                        .min()
-                        .unwrap()
-            };
-
-            // 캐시 업데이트
-            *get_cache(index) = value;
-            value
+            cache::read(index).or(|| {
+                match index {
+                    0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
+                    3 | 4 | 5 => eval(&digits[..index]),
+                    _ => (3..min(index-2, 6))
+                            .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
+                            .min()
+                            .unwrap()
+                }
+            })
         }
 
     };

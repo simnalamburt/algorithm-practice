@@ -19,31 +19,30 @@ fn main() {
 }
 
 mod cache {
-    use std::u32::MAX as uninitialized;
+    use std::u32::MAX as BLANK;
 
-    static mut BUFFER: [u32; 9997] = [uninitialized; 9997];
+    pub struct Cache([u32; 9998]);
+    pub struct Entry(*mut u32);
 
-    pub struct Entry(&'static mut u32);
-
-    pub fn reset() {
-        unsafe { BUFFER = [uninitialized; 9997] }
+    pub fn lock<T, F: FnOnce(Cache) -> T>(func: F) -> T {
+        func(Cache([BLANK; 9998]))
     }
 
-    pub fn read(key: usize) -> Entry {
-        Entry(unsafe { &mut BUFFER[key - 3] })
+    impl Cache {
+        pub fn read(&self, key: usize) -> Entry {
+            Entry(&self.0[key - 3] as *const u32 as *mut u32)
+        }
     }
 
     impl Entry {
-        pub fn or<F: FnOnce() -> u32>(&mut self, func: F) -> u32 {
-            use std::u32::MAX as BLANK;
-
-            match *self.0 {
+        pub fn or<F: FnOnce() -> u32>(&self, func: F) -> u32 {
+            match unsafe { *self.0 } {
                 BLANK => {
                     let value = func();
-                    *self.0 = value;
+                    unsafe { *self.0 = value }
                     value
                 }
-                _ => *self.0
+                value => value
             }
         }
     }
@@ -52,27 +51,26 @@ mod cache {
 fn solve(digits: &[u8]) -> u32 {
     use std::cmp::min;
 
-    // 캐시 리셋
-    cache::reset();
+    cache::lock(|cache| {
+        struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
+        let try = Try {
 
-    struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
-    let try = Try {
+            f: &|try, index| {
+                cache.read(index).or(|| {
+                    match index {
+                        0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
+                        3 | 4 | 5 => eval(&digits[..index]),
+                        _ => (3..min(index-2, 6))
+                                .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
+                                .min()
+                                .unwrap()
+                    }
+                })
+            }
 
-        f: &|try, index| {
-            cache::read(index).or(|| {
-                match index {
-                    0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
-                    3 | 4 | 5 => eval(&digits[..index]),
-                    _ => (3..min(index-2, 6))
-                            .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
-                            .min()
-                            .unwrap()
-                }
-            })
-        }
-
-    };
-    (try.f)(&try, digits.len())
+        };
+        (try.f)(&try, digits.len())
+    })
 }
 
 fn eval(digits: &[u8]) -> u32 {

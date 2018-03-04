@@ -3,8 +3,8 @@ sub println {
   print(@_, "\n");
 }
 
-println("3000");
-foreach (0..600) {
+println("20000");
+foreach (0..4000) {
   println("1234"x2  x1250);
   println("11111222"x1250);
   println("12122222"x1250);

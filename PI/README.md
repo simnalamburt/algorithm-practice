@@ -11,7 +11,7 @@ rustc -o a -O iter.rs
 
 time ./a < input
 time ./a < input2
-./inputgen | time ./a
+./inputgen | time ./a > /dev/null
 
 
 # 유닛테스트 실행

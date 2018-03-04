@@ -22,7 +22,7 @@ mod cache {
     use std::u32::MAX as BLANK;
 
     pub struct Cache([u32; 9998]);
-    pub struct Entry(*mut u32);
+    pub struct Entry<'cache>(&'cache u32);
 
     pub fn lock<T, F: FnOnce(Cache) -> T>(func: F) -> T {
         func(Cache([BLANK; 9998]))
@@ -30,19 +30,24 @@ mod cache {
 
     impl Cache {
         pub fn read(&self, key: usize) -> Entry {
-            Entry(&self.0[key - 3] as *const u32 as *mut u32)
+            Entry(&self.0[key - 3])
         }
     }
 
-    impl Entry {
+    impl<'cache> Entry<'cache> {
         pub fn or<F: FnOnce() -> u32>(&self, func: F) -> u32 {
-            match unsafe { *self.0 } {
+            let addr = self.0;
+            let value = *addr;
+
+            match value {
                 BLANK => {
+                    let ptr = addr as *const u32 as *mut u32;
+
                     let value = func();
-                    unsafe { *self.0 = value }
+                    unsafe { *ptr = value }
                     value
                 }
-                value => value
+                _ => value
             }
         }
     }

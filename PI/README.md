@@ -6,6 +6,7 @@
 rustc -O a.rs
 time ./a < input
 time ./a < input2
+./inputgen | time ./a
 
 # 유닛테스트 실행
 rustc --test a.rs && ./a

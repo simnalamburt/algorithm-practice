@@ -1,0 +1,13 @@
+#!/usr/bin/env perl
+sub println {
+  print(@_, "\n");
+}
+
+println("50");
+foreach (0..10) {
+  println("1234"x2  x1250);
+  println("11111222"x1250);
+  println("12122222"x1250);
+  println("2"x8     x1250);
+  println("12673939"x1250);
+}

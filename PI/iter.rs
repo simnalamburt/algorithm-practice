@@ -39,29 +39,21 @@ fn solve(digits: &[u8]) -> u32 {
 }
 
 fn eval(digits: &[u8]) -> u32 {
+    fn sub(a: u8, b: u8) -> i8 { a as i8 - b as i8 }
+
     let len = digits.len();
+    let diff = sub(digits[1], digits[0]);
 
-    // 조각 길이 검사
-    if len < 3 || 5 < len {
-        panic!("조각의 길이는 항상 3 이상 5 이하여야 합니다. (입력된 조각의 길이: {})", len)
-    }
-
-    let diffs: Vec<_> = (1..len).map(|i| digits[i-1] as i8 - digits[i] as i8).collect();
-
-    // 단조증감여부 체크
-    let is_monotonic = diffs[1..].into_iter().all(|&e| diffs[0] == e);
-    if is_monotonic {
-        match diffs[0] {
+    if (2..len).all(|i| sub(digits[i], digits[i-1]) == diff) {
+        // 숫자가 모노토닉하게 변화하는 경우
+        match diff {
             0 => 1,
             1 | -1 => 2,
             _ => 5,
         }
     } else {
-        let is_alternative = (1..diffs.len()).all(|i| {
-            diffs[0] == (if i%2 == 1 { -1 } else { 1 } * diffs[i])
-        });
-
-        match is_alternative {
+        // 모노토닉하지 않은경우
+        match (2..len).all(|i| digits[i] == digits[i%2]) {
             true => 4,
             false => 10
         }

@@ -24,11 +24,11 @@ mod cache {
     pub struct Cache([u32; 9998]);
     pub struct Entry<'cache>(&'cache u32);
 
-    pub fn lock<T, F: FnOnce(Cache) -> T>(func: F) -> T {
-        func(Cache([BLANK; 9998]))
-    }
-
     impl Cache {
+        pub fn new() -> Self {
+            Cache([BLANK; 9998])
+        }
+
         pub fn read(&self, key: usize) -> Entry {
             Entry(&self.0[key - 3])
         }
@@ -55,27 +55,28 @@ mod cache {
 
 fn solve(digits: &[u8]) -> u32 {
     use std::cmp::min;
+    use cache::Cache;
 
-    cache::lock(|cache| {
-        struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
-        let try = Try {
+    let cache = Cache::new();
 
-            f: &|try, index| {
-                cache.read(index).or(|| {
-                    match index {
-                        0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
-                        3 | 4 | 5 => eval(&digits[..index]),
-                        _ => (3..min(index-2, 6))
-                                .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
-                                .min()
-                                .unwrap()
-                    }
-                })
-            }
+    struct Try<'a> { f: &'a Fn(&Try, usize) -> u32 };
+    let try = Try {
 
-        };
-        (try.f)(&try, digits.len())
-    })
+        f: &|try, index| {
+            cache.read(index).or(|| {
+                match index {
+                    0...2  => panic!("try() 함수의 인자 index는 항상 3 이상이어야 합니다. (현재 index: {})", index),
+                    3 | 4 | 5 => eval(&digits[..index]),
+                    _ => (3..min(index-2, 6))
+                            .map(|i| (try.f)(try, index - i) + eval(&digits[index - i..index]))
+                            .min()
+                            .unwrap()
+                }
+            })
+        }
+
+    };
+    (try.f)(&try, digits.len())
 }
 
 fn eval(digits: &[u8]) -> u32 {

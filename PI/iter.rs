@@ -14,7 +14,7 @@ fn main() {
         let digits: Vec<_> = read_line().trim_right().chars().map(|e| e.to_digit(10).unwrap() as u8).collect();
         let result = solve(&digits);
 
-        println!("{:?}", result);
+        println!("{}", result);
     }
 }
 

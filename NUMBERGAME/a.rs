@@ -12,14 +12,20 @@ fn main() {
     let count = read_line().trim_right().parse().unwrap();
     for _ in 0..count {
         let count = read_line().trim_right().parse().unwrap();
-        let numbers: Vec<i16> = read_line().trim_right().splitn(count, ' ').map(|str| str.parse().unwrap()).collect();
+        let numbers: Vec<i32> = read_line().trim_right().splitn(count, ' ').map(|str| str.parse().unwrap()).collect();
 
         println!("{}", solve(&numbers));
     }
 }
 
-fn solve(numbers: &[i16]) -> i32 {
-    eprintln!("{:?}", numbers);
+fn solve(numbers: &[i32]) -> i32 {
+    try(numbers, 0, 0)
+}
 
-    42
+fn try(numbers: &[i32], me: i32, enemy: i32) -> i32 {
+    match numbers.len() {
+        0 => me - enemy,
+        1 => -try(&[], enemy, me + numbers[0]),
+        _ => ,
+    }
 }

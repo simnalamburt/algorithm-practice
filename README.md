@@ -8,6 +8,7 @@ My competitive programming practice.
 - [ ] FANMEETINGS: FFT 구현하다가 멈춤. 카라츠바로 빠르게 푸는법은 잘 모르겠음
 - [x] PI
 - [ ] FENCE
+- [ ] NUMBERGAME
 
 <br>
 

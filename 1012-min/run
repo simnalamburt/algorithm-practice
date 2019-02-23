@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+
+# 아래 문제 살짝 변형한것의 풀이
+# https://www.acmicpc.net/problem/1012
+
+import math
+
+class Farm:
+    def __init__(self, width: int, height: int, data: bytearray):
+        self.width = width
+        self.height = height
+        self.data = data
+
+    def __repr__(self) -> str:
+        return '\n'.join(
+            (
+                ''.join(str(x)
+                for x in
+                self.data[y*width : (y+1)*width])
+            ) for y in range(height)
+        )
+
+    def __getitem__(self, key: tuple) -> bool:
+        x, y = key
+        return bool(self.data[x + y*self.width])
+
+    @staticmethod
+    def new(width: int, height: int, cabbages: list):
+        # 배추가 심어진 배열을 미리 만듦
+        data = bytearray(width * height)
+        for cabbage in cabbages:
+            x, y = cabbage
+            data[x + y*width] = 1
+
+        return Farm(width, height, data)
+
+    def deploy_worm(self, x: int, y: int):
+        data = bytearray(self.data)
+
+        def do(x: int, y: int):
+            if 0 <= x < width and 0<= y < height:
+                data[x + y*width] = 0
+
+        # 배추 없애기
+        do(x  , y-1)
+        do(x-1, y  )
+        do(x  , y  )
+        do(x+1, y  )
+        do(x  , y+1)
+
+        # 배추가 없어진 농장 반환
+        return Farm(self.width, self.height, data)
+
+def solve(farm: Farm) -> tuple:
+    # 제일 왼쪽 위에 있는 배추를 찾아 떠남
+    for x, y in ((x,y) for x in range(farm.width) for y in range(farm.height)):
+        # 배추가 없으면 패스
+        if not farm[x, y]:
+            continue
+
+        # 처음 만난 배추의 위치를 기록한다
+        contact_x = x
+        contact_y = y
+        break
+    else:
+        # 배추가 단 하나도 없으면 0 반환
+        return 0, []
+
+    # 쓸데없이 중복해서 시도하는걸 막으려면 지렁이를 항상 위 → 아래,
+    # 왼쪽 → 오른쪽 순서로 정렬되게 심어야한다. 그러려면 이렇게 해야함
+    child_nodes = [(contact_x, contact_y)]
+    if contact_x < width - 1:
+        child_nodes += [(contact_x + 1, contact_y)]
+    if contact_y < height - 1:
+        child_nodes += [(contact_x, contact_y + 1)]
+
+    # 자식노드 세개중에서 최소값 찾기
+    answer = math.inf
+    for x, y in child_nodes:
+        sub_answer, sub_path = solve(farm.deploy_worm(x, y))
+        sub_answer += 1
+        sub_path = [(x, y)] + sub_path
+        # 최소값 업데이트
+        if sub_answer < answer:
+            answer = sub_answer
+            path = sub_path
+
+    return answer, path
+
+for _ in range(int(input())):
+    # 배추밭 정보들 읽기
+    width, height, count = map(int, input().split())
+    # 배추 위치 좌표들 읽기
+    cabbages = [map(int, input().split()) for _ in range(count)]
+
+    # 계산
+    farm = Farm.new(width, height, cabbages)
+    answer, detail = solve(farm)
+    print(farm)
+    print(answer)
+    print(detail)
+    print()

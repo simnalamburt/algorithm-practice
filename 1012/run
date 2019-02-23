@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+# https://www.acmicpc.net/problem/1012
+
+class Farm:
+    def __init__(self, width: int, height: int, data: bytearray):
+        self.width = width
+        self.height = height
+        self.data = data
+
+    def __repr__(self) -> str:
+        return '\n'.join(
+            (
+                ''.join(str(x)
+                for x in
+                self.data[y*width : (y+1)*width])
+            ) for y in range(height)
+        )
+
+    def __getitem__(self, key: tuple) -> bool:
+        x, y = key
+        return bool(self.data[x + y*self.width])
+
+    @staticmethod
+    def new(width: int, height: int, cabbages: list):
+        # 배추가 심어진 배열을 미리 만듦
+        data = bytearray(width * height)
+        for cabbage in cabbages:
+            x, y = cabbage
+            data[x + y*width] = 1
+
+        return Farm(width, height, data)
+
+    def deploy_worm(self, input_x: int, input_y: int):
+        data = bytearray(self.data)
+
+        # 스택이 빌 때까지 반복함 (DFS)
+        stack = [(input_x, input_y)]
+        while stack:
+            x, y = stack.pop()
+
+            # 맵을 탈출했으면 패스
+            if not (0 <= x < width and 0 <= y < height):
+                continue
+            # 배추가 안심어져있으면 패스
+            if data[x + y*width] == 0:
+                continue
+
+            # 배추가 심어져있으면 배추를 제거하고 인접한 배추로 이동
+            data[x + y*width] = 0
+            stack.append((x - 1, y))
+            stack.append((x + 1, y))
+            stack.append((x, y - 1))
+            stack.append((x, y + 1))
+
+        # 배추가 일부 제거된 농장 반환
+        return Farm(self.width, self.height, data)
+
+def solve(farm: Farm) -> int:
+    count = 0
+
+    for x in range(farm.width):
+        for y in range(farm.height):
+            # 배추가 없으면 패스
+            if not farm[x, y]:
+                continue
+
+            # 배추가 보이면 지렁이 파견
+            farm = farm.deploy_worm(x, y)
+            count += 1
+
+    return count
+
+for _ in range(int(input())):
+    # 배추밭 정보들 읽기
+    width, height, count = map(int, input().split())
+    # 배추 위치 좌표들 읽기
+    cabbages = [map(int, input().split()) for _ in range(count)]
+
+    # 계산
+    farm = Farm.new(width, height, cabbages)
+    answer = solve(farm)
+    print(answer)

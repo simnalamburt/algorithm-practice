@@ -6,7 +6,6 @@ from dataclasses import dataclass
 # Reference: https://docs.python.org/3/library/dataclasses.html
 @dataclass
 class Person:
-    id: int
     weight: int
     height: int
 
@@ -16,7 +15,7 @@ class Person:
         return self.weight < other.weight and self.height < other.height
 
 count = int(input())
-people = [Person(id, *map(int, input().split())) for id in range(count)]
+people = [Person(*map(int, input().split())) for _ in range(count)]
 print(' '.join(
     str(sum(1 for e in people if person < e) + 1)
     for person in people

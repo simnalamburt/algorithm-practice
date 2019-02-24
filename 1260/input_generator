@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+from random import seed, choice
+
+# 재현 가능한 결과를 위해 시드 고정
+seed(0)
+
+vertex_count = choice(range(1000, 2000))
+edge_numbers = [choice(range(10, 20)) for _ in range(vertex_count)]
+print(f'{vertex_count} {sum(edge_numbers)} 1')
+for i, number in enumerate(edge_numbers):
+    left = i + 1
+    for _ in range(number):
+        right = choice(range(1, vertex_count + 1))
+        print(f'{left} {right}')

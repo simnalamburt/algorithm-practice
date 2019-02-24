@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# https://www.acmicpc.net/problem/1260
+
+vertex_count, edge_count, starting_point = map(int, input().split())
+
+# 그래프에 버텍스 추가
+graph = {vertex: [] for vertex in range(1, vertex_count + 1)}
+# 버텍스들 연결
+for _ in range(edge_count):
+    vertex_left, vertex_right = map(int, input().split())
+    graph[vertex_left].append(vertex_right)
+    graph[vertex_right].append(vertex_left)
+# 정렬
+for edges in graph.values():
+    edges.sort(reverse=True)
+
+# DFS
+def depth_first_traversal(graph: dict, starting_point: int) -> list:
+    stack = [starting_point]
+    visited = {key: False for key in graph.keys()}
+    result = []
+    while stack:
+        # stack 맨 뒤의 원소를 pop함
+        vertex = stack.pop()
+
+        # 이미 방문한 곳이면 패스
+        if visited[vertex]:
+            continue
+
+        # 가정 방문
+        visited[vertex] = True
+        result.append(vertex)
+
+        # 연결된 점들을 Stack에 푸쉬. graph[vertex]가 내림차순(ex: [3, 2, 1]) 로
+        # 정렬되어있어서 이어붙이면 자연스럽게 제일 작은 점을 우선하여 방문하게된다
+        stack += graph[vertex]
+    return result
+
+# BFS
+def breadth_first_traversal(graph: dict, starting_point: int) -> list:
+    queue = [starting_point]
+    visited = {key: False for key in graph.keys()}
+    result = []
+    while queue:
+        # queue 맨 뒤의 원소를 pop함
+        vertex = queue.pop()
+
+        # 이미 방문한 곳이면 패스
+        if visited[vertex]:
+            continue
+
+        # 똑똑 메이가 와써요
+        visited[vertex] = True
+        result.append(vertex)
+
+        # 연결된 점들을 Queue에 푸쉬. 맨 앞에 붙여야 FIFO가 된다
+        queue = graph[vertex] + queue
+    return result
+
+for algorithm in [depth_first_traversal, breadth_first_traversal]:
+    result = algorithm(graph, starting_point)
+    print(' '.join(str(e) for e in result))

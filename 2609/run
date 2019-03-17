@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+from math import gcd
+a, b = map(int, input().split())
+n = gcd(a, b)
+print(n)
+print(a*b//n)

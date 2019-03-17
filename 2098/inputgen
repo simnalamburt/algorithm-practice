@@ -5,7 +5,7 @@ import random
 
 # 파라미터
 SEED = 0
-COUNT = 14
+COUNT = 16
 
 # 재현 가능하도록 랜덤시드 고정
 random.seed(SEED)

@@ -57,4 +57,4 @@ def tsp(start, candidates, dest):
         for vertex in iterate(adjacencies_of_start)
     )
 
-print(min(tsp(i, 2**COUNT - 1 - 2**i, i) for i in range(COUNT)))
+print(tsp(0, 2**COUNT - 2, 0))

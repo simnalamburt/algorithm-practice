@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+input()
+list_a = sorted(map(int, input().split()))
+list_b = sorted(map(int, input().split()), reverse=True)
+print(sum(a*b for a, b in zip(list_a, list_b)))

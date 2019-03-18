@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+# https://acmicpc.net/problem/12015
+import os
+import mmap
+from dataclasses import dataclass
+
+def read():
+    '''
+    stdin을 문제 스펙에 맞게 읽는 함수. stdin이 mmap(2)가 가능하지 않은 유형의
+    파일인 경우 mmap(2)으로 파일을 읽는다.
+    '''
+    try:
+        stdin = mmap.mmap(0, os.stat(0).st_size, mmap.MAP_PRIVATE, mmap.PROT_READ)
+        idx = stdin.find(b'\n')
+        count = int(stdin[:idx])
+        for _ in range(count):
+            pos, idx = idx, stdin.find(b' ', idx + 1)
+            yield int(stdin[pos:idx])
+    except OSError:
+        count = int(input())
+        yield from (int(word) for word in input().split())
+
+@dataclass(frozen=True)
+class Seq:
+    '''
+    수열을 표현하는 자료구조. 길이와 수열의 맨 마지막 원소 정보만 들고있다.
+    '''
+    len: int
+    last: int
+
+if __name__ == '__main__':
+    sequences = set()
+    for num in read():
+        sequences |= {
+            Seq(len=seq.len+1, last=num) for seq in sequences if seq.last < num
+        } | {Seq(len=1, last=num)}
+
+    print(max(sequences, key=lambda e:e.len).len)

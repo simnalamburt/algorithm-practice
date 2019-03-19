@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-
-# 실행방법:
-#
-#     ./run < input
-#     ./inputgen | ./run
-#
-# https://www.acmicpc.net/problem/2098
-
 from math import inf
 from functools import lru_cache
 
@@ -24,7 +15,7 @@ COST = [
 
 # ADJACENCIES[i] = 정점 i에서 출발해 도달할 수 있는 인접한 점들, bitset
 ADJACENCIES = [
-    sum(2**j for j in range(COUNT) if COST[i][j] < inf)
+    sum(1<<j for j in range(COUNT) if COST[i][j] < inf)
     for i in range(COUNT)
 ]
 
@@ -53,8 +44,8 @@ def tsp(start, candidates, dest):
         return inf
 
     return min(
-        COST[start][vertex] + tsp(vertex, candidates - 2**vertex, dest)
+        COST[start][vertex] + tsp(vertex, candidates & ~(1<<vertex), dest)
         for vertex in iterate(adjacencies_of_start)
     )
 
-print(tsp(0, 2**COUNT - 2, 0))
+print(tsp(0, (1<<COUNT) - 2, 0))

@@ -1,7 +1,17 @@
+#pragma GCC optimize("O3")
+#pragma GCC target("arch=haswell")
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <inttypes.h>
+
+// Linux specific
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -65,8 +75,13 @@ static u32 tsp_actual(u8 start, u16 candidates) {
 }
 
 int main() {
+  // stdin 파일에 mmap으로 연결함
+  struct stat stdin_stat;
+  fstat(STDIN_FILENO, &stdin_stat);
+  char *input = mmap(NULL, stdin_stat.st_size, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0);
+
   // COUNT 입력받음. [2, 16] 범위 밖일경우 즉시 프로그램 종료
-  scanf("%"SCNu8, &COUNT);
+  COUNT = strtoul(input, &input, 10);
   if (COUNT < 2 || 16 < COUNT) {
     fprintf(stderr, "정점의 수는 2 이상 16 이하여야 합니다.\n");
     return -1;
@@ -76,8 +91,7 @@ int main() {
   // COST[i][j] = 정점 i에서 j로 가는데에 드는 비용. 갈 수 없을경우 ∞
   for (u8 row = 0; row < COUNT; ++row) {
     for (u8 col = 0; col < COUNT; ++col) {
-      u32 num;
-      scanf("%"SCNu32, &num);
+      u32 num = strtoul(input, &input, 10);
       COST[row][col] = num == 0 ? UINT31_MAX : num;
     }
   }
@@ -95,4 +109,6 @@ int main() {
   }
 
   printf("%d\n", tsp(0, (1<<COUNT) - 2));
+  fflush(stdout);
+  _exit(0);
 }

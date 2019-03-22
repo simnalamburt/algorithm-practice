@@ -3,9 +3,9 @@ from random import Random
 
 def dummy_input(count=1_000_000, seed=0):
     rng = Random(seed)
-    rand = lambda: str()
-    for _ in range(count):
-        yield rng.randrange(1, 1_000_001)
+    yield from (
+        rng.randrange(1, 1_000_001) for _ in range(count)
+    )
 
 if __name__ == '__main__':
     # 파라미터

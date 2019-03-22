@@ -1,7 +1,22 @@
 from unittest import TestCase, main
+from dataclasses import dataclass
 
-from main import Seq, solution
+from main import solution
 from inputgen import dummy_input
+
+@dataclass(frozen=True)
+class Seq:
+    '''
+    수열을 표현하는 자료구조. 길이와 수열의 맨 마지막 원소 정보만 들고있다.
+    '''
+    len: int
+    last: int
+
+    def __lt__(self, other_num: int):
+        '''
+        bisect_left 용 메서드
+        '''
+        return self.last < other_num
 
 def solution_naive(numbers) -> int:
     sequences = set()
@@ -25,16 +40,16 @@ class TestStringMethods(TestCase):
             (50, 5): 10,
         }
 
-        self.assertEqual(solution([10, 20, 10, 30, 20, 50], assertion=True), 4)
+        self.assertEqual(solution(iter([10, 20, 10, 30, 20, 50])), 4)
         for (count, seed), actual_answer in answers.items():
-            expected_answer = solution(dummy_input(count, seed), assertion=True)
+            expected_answer = solution(dummy_input(count, seed))
             self.assertEqual(expected_answer, actual_answer)
 
     def test_with_naive_solution(self):
         for count in [10, 30, 50]:
             for seed in [100, 200, 300, 400, 500]:
                 self.assertEqual(
-                    solution(dummy_input(count, seed), assertion=True),
+                    solution(dummy_input(count, seed)),
                     solution_naive(dummy_input(count, seed)),
                 )
 

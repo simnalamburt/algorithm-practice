@@ -25,16 +25,16 @@ class TestStringMethods(TestCase):
             (50, 5): 10,
         }
 
-        self.assertEqual(solution([10, 20, 10, 30, 20, 50]), 4)
+        self.assertEqual(solution([10, 20, 10, 30, 20, 50], assertion=True), 4)
         for (count, seed), actual_answer in answers.items():
-            expected_answer = solution(dummy_input(count, seed))
+            expected_answer = solution(dummy_input(count, seed), assertion=True)
             self.assertEqual(expected_answer, actual_answer)
 
     def test_with_naive_solution(self):
         for count in [10, 30, 50]:
             for seed in [100, 200, 300, 400, 500]:
                 self.assertEqual(
-                    solution(dummy_input(count, seed)),
+                    solution(dummy_input(count, seed), assertion=True),
                     solution_naive(dummy_input(count, seed)),
                 )
 

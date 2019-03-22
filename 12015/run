@@ -11,14 +11,22 @@ def read():
     '''
     try:
         stdin = mmap.mmap(0, os.stat(0).st_size, mmap.MAP_PRIVATE, mmap.PROT_READ)
-        idx = stdin.find(b'\n')
-        count = int(stdin[:idx])
-        for _ in range(count):
-            pos, idx = idx, stdin.find(b' ', idx + 1)
-            yield int(stdin[pos:idx])
-    except OSError:
+    except OSError as e:
+        # mmap(2) 실패 이외의 이유로 실패했다면 예외 전파
+        if e.errno != 22:
+            raise
+
+        # mmap(2) 가 불가능한 유형의 파일이여서 실패했다면 .read()로 입력 읽기
         count = int(input())
         yield from (int(word) for word in input().split())
+        return
+
+    # mmap(2) 활용하여 빠르게 입력 처리
+    idx = stdin.find(b'\n')
+    count = int(stdin[:idx])
+    for _ in range(count):
+        pos, idx = idx, stdin.find(b' ', idx + 1)
+        yield int(stdin[pos:idx])
 
 @dataclass(frozen=True)
 class Seq:
@@ -28,11 +36,13 @@ class Seq:
     len: int
     last: int
 
-if __name__ == '__main__':
+def solution(numbers) -> int:
     sequences = set()
-    for num in read():
+    for num in numbers:
         sequences |= {
             Seq(len=seq.len+1, last=num) for seq in sequences if seq.last < num
         } | {Seq(len=1, last=num)}
+    return max(sequences, key=lambda e:e.len).len
 
-    print(max(sequences, key=lambda e:e.len).len)
+if __name__ == '__main__':
+    print(solution(read()))

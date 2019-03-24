@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+def hanoi(count: int, src: int = 1, dst: int = 3):
+    if count == 1:
+        yield (src, dst)
+    elif count > 1:
+        via = 6 - src - dst
+        yield from hanoi(count - 1, src, via)
+        yield (src, dst)
+        yield from hanoi(count - 1, via, dst)
+
+num = int(input())
+print(2**num - 1)
+if num <= 20:
+    for (src, dst) in hanoi(num):
+        print(f'{src} {dst}')

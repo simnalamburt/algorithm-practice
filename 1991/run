@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+COUNT = int(input())
+TREE = [None] * COUNT
+for _ in range(COUNT):
+    node, left, right = input().split()
+    TREE[ord(node) - ord('A')] = (
+        ord(left) - ord('A') if left != '.' else None,
+        ord(right) - ord('A') if right != '.' else None,
+    )
+
+def dfs_preorder(idx: int = 0) -> str:
+    left, right = TREE[idx]
+    return (
+        chr(idx + ord('A')) +
+        (dfs_preorder(left) if left is not None else '') +
+        (dfs_preorder(right) if right is not None else '')
+    )
+def dfs_inorder(idx: int = 0) -> str:
+    left, right = TREE[idx]
+    return (
+        (dfs_inorder(left) if left is not None else '') +
+        chr(idx + ord('A')) +
+        (dfs_inorder(right) if right is not None else '')
+    )
+def dfs_postorder(idx: int = 0) -> str:
+    left, right = TREE[idx]
+    return (
+        (dfs_postorder(left) if left is not None else '') +
+        (dfs_postorder(right) if right is not None else '') +
+        chr(idx + ord('A'))
+    )
+
+print(dfs_preorder())
+print(dfs_inorder())
+print(dfs_postorder())

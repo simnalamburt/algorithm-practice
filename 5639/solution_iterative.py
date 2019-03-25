@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# https://www.acmicpc.net/problem/5639
-
 from sys import stdin
 
 # 트리 초기화

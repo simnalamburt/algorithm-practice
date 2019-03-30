@@ -1,4 +1,4 @@
-// gcc naive.c -Wall -Wextra -Wpedantic -Werror -std=c18
+// gcc solution.c -Wall -Wextra -Wpedantic -Werror -std=c18
 //
 // Reference:
 //   https://www.acmicpc.net/problem/5639
@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 // Linux specific headers
 #include <sys/types.h>
@@ -13,18 +14,34 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-typedef uint8_t u8;
+typedef uint8_t  u8;
+typedef uint16_t u16;
 typedef uint32_t u32;
 
-struct Node { u32 value, left, right; };
-static struct Node TREE[10000];
+static u32 INPUTS[10001];
 
-void dfs(u32 index) {
-  const struct Node node = TREE[index];
+static u16 solve(u16 idx, u32 upper_bound) {
+  const u32 pivot = INPUTS[idx];
 
-  if (node.left != 0) { dfs(node.left); }
-  if (node.right != 0) { dfs(node.right); }
-  printf("%d\n", node.value);
+  // 오른쪽 자식의 인덱스
+  const u16 idx_right = (
+    pivot > INPUTS[idx + 1] ?
+    // 왼쪽 자식이 존재할 경우
+    solve(idx + 1, upper_bound < pivot ? upper_bound : pivot) :
+    // 왼쪽 자식이 존재하지 않을 경우
+    idx + 1
+  );
+
+  const u16 idx_end = (
+    upper_bound > INPUTS[idx_right] ?
+    // 오른쪽 자식이 존재할 경우
+    solve(idx_right, upper_bound) :
+    // 오른쪽 자식이 존재하지 않을 경우
+    idx_right
+  );
+
+  printf("%" PRIu32 "\n", pivot);
+  return idx_end;
 }
 
 int main() {
@@ -56,7 +73,7 @@ int main() {
 
     if (is_wip) {
       // 숫자 파싱함
-      TREE[index++].value = number_wip;
+      INPUTS[index++] = number_wip;
       number_wip = 0;
       is_wip = false;
     }
@@ -64,30 +81,8 @@ int main() {
   const size_t len = index;
 
   //
-  // 트리 초기화
+  // 알고리즘 수행
   //
-  for (size_t idx = 1; idx < len; ++idx) {
-    // TREE[0..idx] 까지 트리가 초기화된 상태이고
-    // TREE[idx] 를 트리에 삽입하면 됨
-
-    size_t i = 0;
-    while (true) {
-      u32 * const next = TREE[idx].value < TREE[i].value ?
-        &TREE[i].left : &TREE[i].right;
-      if (*next == 0) {
-        *next = idx;
-        // Return
-        break;
-      }
-
-      // Tail recursion
-      i = *next;
-    }
-
-  }
-
-  //
-  // 트리 순회
-  //
-  dfs(0);
+  INPUTS[len] = UINT32_MAX;
+  solve(0, UINT32_MAX);
 }

@@ -1,5 +1,4 @@
-{ fpc solution.pas -O2 -Co -Ct -Ci }
-
+// fpc solution.pas -O2 -Coti -vwnh
 program main;
 var
   a, b: integer;

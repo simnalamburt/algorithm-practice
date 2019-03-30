@@ -1,2 +1,6 @@
+# Build results
 a.out
 *.o
+
+# Pascal build results
+solution

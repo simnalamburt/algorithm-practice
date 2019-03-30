@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # https://www.acmicpc.net/problem/2749
 from functools import lru_cache
 

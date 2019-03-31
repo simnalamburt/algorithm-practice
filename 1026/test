@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euo pipefail; IFS=$'\n\t'
+
+for count in {1..1000}; do
+  for seed in {1..3}; do
+    A=$(./inputgen $count $seed | ./run)
+    B=$(./inputgen $count $seed | ./solution)
+
+    if [ "$A" = "$B" ]; then
+      printf '%5d %5d Same\n' $count $seed
+    else
+      printf '%5d %5d Different\n' $count $seed
+      exit 1
+    fi
+  done
+done

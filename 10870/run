@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+# https://www.acmicpc.net/problem/10870
+
+BASE_CASES = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
+
+def fibo(num: int) -> tuple:
+    # Base cases
+    if num < 13:
+        return (BASE_CASES[num], BASE_CASES[num+1])
+
+    # d'Ocagne's identity
+    # Reference: https://en.wikipedia.org/wiki/Fibonacci_number#d'Ocagne's_identity
+    k = num // 2
+    fibo_k0, fibo_k1 = fibo(k)
+    return (
+        (fibo_k0*(2*fibo_k1 - fibo_k0), fibo_k0**2 + fibo_k1**2)
+        if num % 2 == 0 else
+        (fibo_k0**2 + fibo_k1**2, fibo_k1*(2*fibo_k0 + fibo_k1))
+    )
+
+if __name__ == '__main__':
+    num = int(input())
+    answer = fibo(num)[0]
+    print(answer)

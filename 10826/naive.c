@@ -82,7 +82,7 @@ static i8 bigint_find_msd(const BigInt *self) {
 }
 
 // file에 self를 출력함
-static void bigint_fprint(const BigInt *self, FILE* file) {
+static void bigint_print(const BigInt *self, FILE* file) {
   if (bigint_is_zero(self)) {
     puts("0");
     return;
@@ -128,6 +128,6 @@ int main() {
     bigint_set(&b, &tmp);
     --num;
   }
-  bigint_fprint(&a, stdout);
+  bigint_print(&a, stdout);
   fputc('\n', stdout);
 }

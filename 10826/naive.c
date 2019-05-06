@@ -21,6 +21,7 @@ typedef __uint128_t u128;
 // 쓰도록 결정했다. 덧셈할때에 carry 처리를 편하게 하기 위해 10**38 진법 대신
 // 10**37 진법을 쓰기로 하였다.
 #define BIGINT_RADIX ((u128)1000000000000 * (u128)1000000000000 * (u128)10000000000000)
+#define BIGINT_RADIX_LOG10 37
 
 // BigInt의 자리수 한계
 //
@@ -90,12 +91,12 @@ static void bigint_fprint(const BigInt *self, FILE* file) {
   const i8 msd_digit = bigint_find_msd(self);
 
   // 10**37진법에서 제일 큰 자리수부터 하나씩 출력함
-  char buffer[37];
+  char buffer[BIGINT_RADIX_LOG10];
   for (i8 digit = msd_digit; digit >= 0; --digit) {
     u128 num = self->data[digit];
 
     // 10**37 진법의 자리수 하나 num 을 buffer에 10진수로 변환
-    i8 j = 36;
+    i8 j = BIGINT_RADIX_LOG10 - 1;
 
     for (; j >= 0; --j) {
       // MSD를 출력하고있는 경우에만 leading zero를 스킵해야함
@@ -110,7 +111,7 @@ static void bigint_fprint(const BigInt *self, FILE* file) {
     // 현재 buffer에 10진수 숫자가 '37 - j'개 만큼 기록되었음
 
     // buffer 출력
-    fwrite(&buffer[j], 1, 37 - j, file);
+    fwrite(&buffer[j], 1, BIGINT_RADIX_LOG10 - j, file);
   }
 }
 

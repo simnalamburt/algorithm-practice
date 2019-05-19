@@ -12,21 +12,24 @@ use std::io::{stdout, BufWriter};
 fn main() {
     #[target_feature(enable = "avx2")]
     unsafe {
-        let mut iter = parse(read_input());
-        let count = iter.next().unwrap() as usize;
-        let mut numbers = vec![0; count];
-        for (i, num) in iter.enumerate() {
-            numbers[i] = num;
-        }
+        let mut table = [false; 2_000_001];
 
-        numbers.sort_unstable();
+        for num in parse(read_input()).skip(1) {
+            // -1_000_000 <= num <= 1_000_000
+            table[num as usize + 1_000_000] = true;
+        }
 
         let stdout = stdout();
         let handle = stdout.lock();
         let mut writer = BufWriter::new(handle);
 
-        for num in numbers {
-            writer.write(num.to_string().as_bytes()).unwrap();
+        for (i, val) in table.into_iter().enumerate() {
+            if !val {
+                continue;
+            }
+            writer
+                .write((i as i32 - 1_000_000).to_string().as_bytes())
+                .unwrap();
             writer.write(b"\n").unwrap();
         }
     }
@@ -184,7 +187,11 @@ mod parse {
                         (State::ExpectDigitBlank, Kind::Blank) => {
                             // 파싱 종료
                             self.index += 1;
-                            return Some(if let Sign::Plus = sign { number } else { -number });
+                            return Some(if let Sign::Plus = sign {
+                                number
+                            } else {
+                                -number
+                            });
                         }
                         _ => exit(1),
                     }
@@ -194,7 +201,11 @@ mod parse {
 
                 // 파싱중 EOF를 만남
                 if let State::ExpectDigitBlank = state {
-                    return Some(if let Sign::Plus = sign { number } else { -number });
+                    return Some(if let Sign::Plus = sign {
+                        number
+                    } else {
+                        -number
+                    });
                 }
 
                 None

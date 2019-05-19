@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+import random
+random.seed(0)
+COUNT = 1_000_000
+
+print(COUNT)
+for n in random.sample(range(COUNT + 1), COUNT):
+    print(n)

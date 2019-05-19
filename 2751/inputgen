@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
+import sys
 import random
-random.seed(0)
-COUNT = 1_000_000
+
+if len(sys.argv) == 2:
+    random.seed(sys.argv[1])
+    COUNT = random.randint(300_000, 700_000)
+else:
+    random.seed(0)
+    COUNT = 1_000_000
 
 print(COUNT)
-for n in random.sample(range(COUNT + 1), COUNT):
+for n in random.sample(range(1_000_001), COUNT):
     print(n)

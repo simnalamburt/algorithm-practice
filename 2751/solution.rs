@@ -4,21 +4,20 @@
 //! Reference:
 //!   https://www.acmicpc.net/problem/2751
 
-use itoa::itoa;
 use mmap::read_input;
 use parse::parse;
 use std::io::prelude::*;
 use std::io::{stdout, BufWriter};
 use std::mem::uninitialized;
 
+static mut TABLE: [bool; 2_000_001] = [false; 2_000_001];
+
 fn main() {
     #[target_feature(enable = "avx2")]
     unsafe {
-        let mut table = [false; 2_000_001];
-
         for num in parse(read_input()).skip(1) {
             // -1_000_000 <= num <= 1_000_000
-            table[num as usize + 1_000_000] = true;
+            TABLE[num as usize + 1_000_000] = true;
         }
 
         let stdout = stdout();
@@ -26,7 +25,7 @@ fn main() {
         let mut writer = BufWriter::new(handle);
 
         let mut buffer: [u8; 11] = uninitialized();
-        for (i, val) in table.into_iter().enumerate() {
+        for (i, val) in TABLE.into_iter().enumerate() {
             if !val {
                 continue;
             }
@@ -115,8 +114,8 @@ mod mmap {
 }
 
 mod parse {
+    //! 항상 valid한 입력만이 들어온다고 가정함
     use std::iter::Iterator;
-    use std::process::exit;
 
     pub struct FastParser<'a> {
         addr: &'a [u8],
@@ -127,88 +126,43 @@ mod parse {
         FastParser { addr, index: 0 }
     }
 
-    #[derive(Copy, Clone)]
-    enum State {
-        ExpectSignDigitBlank,
-        ExpectDigit,
-        ExpectDigitBlank,
-    }
-    #[derive(Copy, Clone)]
-    enum Kind {
-        Sign,
-        Digit,
-        Blank,
-    }
-    #[derive(Copy, Clone)]
-    enum Sign {
-        Plus,
-        Minus,
-    }
-
     impl<'a> Iterator for FastParser<'a> {
         type Item = i32;
 
         fn next(&mut self) -> Option<Self::Item> {
             #[target_feature(enable = "avx2")]
             {
-                let mut state = State::ExpectSignDigitBlank;
-                let mut sign = Sign::Plus;
-
+                let mut is_wip = false;
+                let mut is_plus = true;
                 let mut number = 0;
 
+                if self.addr.len() <= self.index {
+                    return None;
+                }
+
+                if self.addr[self.index] == b'-' {
+                    is_plus = false;
+                    self.index += 1;
+                }
+
                 while self.index < self.addr.len() {
-                    let ch = self.addr[self.index];
-
-                    let kind = match ch {
-                        b'-' => Kind::Sign,
-                        b'0'..=b'9' => Kind::Digit,
-                        b' ' | b'\n' => Kind::Blank,
-                        _ => exit(1),
-                    };
-
-                    let mut read_digit = || number = 10 * number + (ch - b'0') as i32;
-
-                    match (state, kind) {
-                        (State::ExpectSignDigitBlank, Kind::Sign) => {
-                            state = State::ExpectDigit;
-                            sign = Sign::Minus;
+                    match self.addr[self.index] {
+                        ch @ b'0'..=b'9' => {
+                            is_wip = true;
+                            number = 10 * number + (ch - b'0') as i32;
                         }
-                        (State::ExpectSignDigitBlank, Kind::Digit) => {
-                            state = State::ExpectDigitBlank;
-                            read_digit();
-                        }
-                        (State::ExpectSignDigitBlank, Kind::Blank) => {
-                            // no-op
-                        }
-                        (State::ExpectDigit, Kind::Digit) => {
-                            state = State::ExpectDigitBlank;
-                            read_digit();
-                        }
-                        (State::ExpectDigitBlank, Kind::Digit) => {
-                            read_digit();
-                        }
-                        (State::ExpectDigitBlank, Kind::Blank) => {
-                            // 파싱 종료
+                        _ => {
                             self.index += 1;
-                            return Some(if let Sign::Plus = sign {
-                                number
-                            } else {
-                                -number
-                            });
+                            return Some(if is_plus { number } else { -number });
                         }
-                        _ => exit(1),
-                    }
+                    };
 
                     self.index += 1;
                 }
 
                 // 파싱중 EOF를 만남
-                if let State::ExpectDigitBlank = state {
-                    return Some(if let Sign::Plus = sign {
-                        number
-                    } else {
-                        -number
-                    });
+                if is_wip {
+                    return Some(if is_plus { number } else { -number });
                 }
 
                 None
@@ -217,38 +171,14 @@ mod parse {
     }
 }
 
-mod itoa {
-    /// 아래 글의 VITAUT_1 구현체임.
-    ///
-    /// https://stackoverflow.com/a/32818030
-    ///
-    /// TODO: itoa 최적화 https://github.com/miloyip/itoa-benchmark
-    pub fn itoa(buffer: &mut [u8; 11], val: i32) -> usize {
-        if val < 0 {
-            let ret = itoa(buffer, -val);
-            buffer[ret - 1] = b'-';
-            return ret - 1;
-        }
-
-        let mut p = 11;
-        let mut val = val as usize;
-
-        while val >= 100 {
-            let old = val;
-
-            p -= 2;
-            val /= 100;
-            buffer[p] = TABLE[old - (val * 100)][0];
-            buffer[p + 1] = TABLE[old - (val * 100)][1];
-        }
-
-        p -= 2;
-        buffer[p] = TABLE[val][0];
-        buffer[p + 1] = TABLE[val][1];
-
-        p + if val < 10 { 1 } else { 0 }
-    }
-
+/// lut 알고리즘
+///
+/// Reference:
+///   https://stackoverflow.com/a/32818030
+///   https://github.com/miloyip/itoa-benchmark
+///
+/// NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
+fn itoa(buffer: &mut [u8; 11], val: i32) -> usize {
     #[rustfmt::skip]
     const TABLE: [&'static [u8; 2]; 100] = [
         b"00", b"01", b"02", b"03", b"04", b"05", b"06", b"07", b"08", b"09",
@@ -262,4 +192,28 @@ mod itoa {
         b"80", b"81", b"82", b"83", b"84", b"85", b"86", b"87", b"88", b"89",
         b"90", b"91", b"92", b"93", b"94", b"95", b"96", b"97", b"98", b"99",
     ];
+
+    if val < 0 {
+        let ret = itoa(buffer, -val);
+        buffer[ret - 1] = b'-';
+        return ret - 1;
+    }
+
+    let mut p = 11;
+    let mut val = val as usize;
+
+    while val >= 100 {
+        let old = val;
+
+        p -= 2;
+        val /= 100;
+        buffer[p] = TABLE[old - (val * 100)][0];
+        buffer[p + 1] = TABLE[old - (val * 100)][1];
+    }
+
+    p -= 2;
+    buffer[p] = TABLE[val][0];
+    buffer[p + 1] = TABLE[val][1];
+
+    p + if val < 10 { 1 } else { 0 }
 }

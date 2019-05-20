@@ -171,7 +171,7 @@ mod parse {
     }
 }
 
-/// LUT, mod by 100
+/// LUT, mod by 100. -1000000 <= val <= 1000000 일때에만 정상적으로 동작함.
 ///
 /// Reference:
 ///   https://github.com/miloyip/itoa-benchmark

@@ -4,10 +4,12 @@
 //! Reference:
 //!   https://www.acmicpc.net/problem/2751
 
+use itoa::itoa;
 use mmap::read_input;
 use parse::parse;
 use std::io::prelude::*;
 use std::io::{stdout, BufWriter};
+use std::mem::uninitialized;
 
 fn main() {
     #[target_feature(enable = "avx2")]
@@ -23,11 +25,15 @@ fn main() {
         let handle = stdout.lock();
         let mut writer = BufWriter::new(handle);
 
+        let mut buffer: [u8; 11] = uninitialized();
         for (i, val) in table.into_iter().enumerate() {
             if !val {
                 continue;
             }
-            writeln!(writer, "{}", i as i32 - 1_000_000).unwrap();
+            let ret = itoa(&mut buffer, i as i32 - 1_000_000);
+
+            writer.write_all(&buffer[ret..]).unwrap();
+            writer.write_all(b"\n").unwrap();
         }
     }
 }
@@ -209,4 +215,51 @@ mod parse {
             }
         }
     }
+}
+
+mod itoa {
+    /// 아래 글의 VITAUT_1 구현체임.
+    ///
+    /// https://stackoverflow.com/a/32818030
+    ///
+    /// TODO: itoa 최적화 https://github.com/miloyip/itoa-benchmark
+    pub fn itoa(buffer: &mut [u8; 11], val: i32) -> usize {
+        if val < 0 {
+            let ret = itoa(buffer, -val);
+            buffer[ret - 1] = b'-';
+            return ret - 1;
+        }
+
+        let mut p = 11;
+        let mut val = val as usize;
+
+        while val >= 100 {
+            let old = val;
+
+            p -= 2;
+            val /= 100;
+            buffer[p] = TABLE[old - (val * 100)][0];
+            buffer[p + 1] = TABLE[old - (val * 100)][1];
+        }
+
+        p -= 2;
+        buffer[p] = TABLE[val][0];
+        buffer[p + 1] = TABLE[val][1];
+
+        p + if val < 10 { 1 } else { 0 }
+    }
+
+    #[rustfmt::skip]
+    const TABLE: [&'static [u8; 2]; 100] = [
+        b"00", b"01", b"02", b"03", b"04", b"05", b"06", b"07", b"08", b"09",
+        b"10", b"11", b"12", b"13", b"14", b"15", b"16", b"17", b"18", b"19",
+        b"20", b"21", b"22", b"23", b"24", b"25", b"26", b"27", b"28", b"29",
+        b"30", b"31", b"32", b"33", b"34", b"35", b"36", b"37", b"38", b"39",
+        b"40", b"41", b"42", b"43", b"44", b"45", b"46", b"47", b"48", b"49",
+        b"50", b"51", b"52", b"53", b"54", b"55", b"56", b"57", b"58", b"59",
+        b"60", b"61", b"62", b"63", b"64", b"65", b"66", b"67", b"68", b"69",
+        b"70", b"71", b"72", b"73", b"74", b"75", b"76", b"77", b"78", b"79",
+        b"80", b"81", b"82", b"83", b"84", b"85", b"86", b"87", b"88", b"89",
+        b"90", b"91", b"92", b"93", b"94", b"95", b"96", b"97", b"98", b"99",
+    ];
 }

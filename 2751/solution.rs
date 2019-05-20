@@ -27,10 +27,7 @@ fn main() {
             if !val {
                 continue;
             }
-            writer
-                .write((i as i32 - 1_000_000).to_string().as_bytes())
-                .unwrap();
-            writer.write(b"\n").unwrap();
+            writeln!(writer, "{}", i as i32 - 1_000_000).unwrap();
         }
     }
 }

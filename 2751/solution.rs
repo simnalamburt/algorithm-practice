@@ -24,7 +24,7 @@ fn main() {
         let handle = stdout.lock();
         let mut writer = BufWriter::new(handle);
 
-        let mut buffer: [u8; 11] = uninitialized();
+        let mut buffer: [u8; 8] = uninitialized();
         for (i, val) in TABLE.into_iter().enumerate() {
             if !val {
                 continue;
@@ -171,14 +171,13 @@ mod parse {
     }
 }
 
-/// lut 알고리즘
+/// LUT, mod by 100
 ///
 /// Reference:
-///   https://stackoverflow.com/a/32818030
 ///   https://github.com/miloyip/itoa-benchmark
 ///
 /// NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
-fn itoa(buffer: &mut [u8; 11], val: i32) -> usize {
+fn itoa(buffer: &mut [u8; 8], val: i32) -> usize {
     #[rustfmt::skip]
     const TABLE: [&'static [u8; 2]; 100] = [
         b"00", b"01", b"02", b"03", b"04", b"05", b"06", b"07", b"08", b"09",
@@ -199,7 +198,7 @@ fn itoa(buffer: &mut [u8; 11], val: i32) -> usize {
         return ret - 1;
     }
 
-    let mut p = 11;
+    let mut p = buffer.len();
     let mut val = val as usize;
 
     while val >= 100 {

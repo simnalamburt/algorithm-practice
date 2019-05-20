@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <string.h>
 
 // Linux specific headers
 #include <sys/types.h>
@@ -18,7 +19,8 @@
 
 typedef int32_t i32;
 typedef uint8_t u8;
-typedef size_t usize;
+typedef uint16_t u16;
+typedef uint64_t u64;
 
 static i32 parse(const u8 *addr, off_t file_size, off_t *index) {
   bool is_plus = true;
@@ -40,17 +42,18 @@ static i32 parse(const u8 *addr, off_t file_size, off_t *index) {
   return is_plus ? number : -number;
 }
 
-static const u8 ITOA_LUT[] =
-  "00010203040506070809"
-  "10111213141516171819"
-  "20212223242526272829"
-  "30313233343536373839"
-  "40414243444546474849"
-  "50515253545556575859"
-  "60616263646566676869"
-  "70717273747576777879"
-  "80818283848586878889"
-  "90919293949596979899";
+static const u16 ITOA_LUT[100] = {
+  0x3030, 0x3130, 0x3230, 0x3330, 0x3430, 0x3530, 0x3630, 0x3730, 0x3830, 0x3930,
+  0x3031, 0x3131, 0x3231, 0x3331, 0x3431, 0x3531, 0x3631, 0x3731, 0x3831, 0x3931,
+  0x3032, 0x3132, 0x3232, 0x3332, 0x3432, 0x3532, 0x3632, 0x3732, 0x3832, 0x3932,
+  0x3033, 0x3133, 0x3233, 0x3333, 0x3433, 0x3533, 0x3633, 0x3733, 0x3833, 0x3933,
+  0x3034, 0x3134, 0x3234, 0x3334, 0x3434, 0x3534, 0x3634, 0x3734, 0x3834, 0x3934,
+  0x3035, 0x3135, 0x3235, 0x3335, 0x3435, 0x3535, 0x3635, 0x3735, 0x3835, 0x3935,
+  0x3036, 0x3136, 0x3236, 0x3336, 0x3436, 0x3536, 0x3636, 0x3736, 0x3836, 0x3936,
+  0x3037, 0x3137, 0x3237, 0x3337, 0x3437, 0x3537, 0x3637, 0x3737, 0x3837, 0x3937,
+  0x3038, 0x3138, 0x3238, 0x3338, 0x3438, 0x3538, 0x3638, 0x3738, 0x3838, 0x3938,
+  0x3039, 0x3139, 0x3239, 0x3339, 0x3439, 0x3539, 0x3639, 0x3739, 0x3839, 0x3939,
+};
 
 // LUT, mod by 100. -1000000 <= val <= 1000000 일때에만 정상적으로 동작함.
 //
@@ -59,7 +62,7 @@ static const u8 ITOA_LUT[] =
 // NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
 static u8 itoa(u8 buffer[8], i32 val) {
   if (val < 0) {
-    const usize ret = itoa(buffer, -val);
+    const u8 ret = itoa(buffer, -val);
     buffer[ret - 1] = '-';
     return ret - 1;
   }
@@ -70,14 +73,11 @@ static u8 itoa(u8 buffer[8], i32 val) {
 
     p -= 2;
     val /= 100;
-    const usize idx = (old - (val*100))*2;
-    buffer[p] = ITOA_LUT[idx];
-    buffer[p + 1] = ITOA_LUT[idx + 1];
+    memcpy(&buffer[p], &ITOA_LUT[old - (val*100)], 2);
   }
 
   p -= 2;
-  buffer[p] = ITOA_LUT[2*val];
-  buffer[p + 1] = ITOA_LUT[2*val + 1];
+  memcpy(&buffer[p], &ITOA_LUT[val], 2);
 
   return p + (val < 10);
 }
@@ -92,7 +92,7 @@ int main() {
   const off_t file_size = stat.st_size;
 
   // stdin mmap 수행
-  const u8 * const addr = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0);
+  u8 * const addr = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, STDIN_FILENO, 0);
   if (addr == MAP_FAILED) { return -1; }
 
   // 오토마타로 stdin 파싱
@@ -103,16 +103,22 @@ int main() {
     TABLE[num + 1000000] = 1;
   }
 
-  // 출력
-  setvbuf(stdout, NULL, _IOFBF, 1024 * 1024);
-
-  u8 buffer[9];
-  buffer[8] = '\n';
+  // 출력할 내용을 mmap에 기록
+  u64 idx = 0;
+  u8 buffer[8];
   for (i32 i = 0; i < 2000001; ++i) {
     if (!TABLE[i]) { continue; }
-    u8 offset = itoa(buffer, i - 1000000);
-    fwrite(buffer + offset, 1, 9 - offset, stdout);
+
+    const u8 offset = itoa(buffer, i - 1000000);
+    const u8 len = 8 - offset;
+    memcpy(&addr[idx], buffer + offset, len);
+    idx += len;
+
+    addr[idx] = '\n';
+    idx += 1;
   }
-  fflush(stdout);
+
+  // 출력
+  write(STDOUT_FILENO, addr, idx);
   _exit(0);
 }

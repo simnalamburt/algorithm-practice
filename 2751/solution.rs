@@ -29,18 +29,60 @@ fn main() {
         //
         let mut idx = 0;
         let mut buffer: [u8; 8] = uninitialized();
-        for i in 0..1_000_000 {
+
+        // -1_000_000
+        if TABLE[0] {
+            OUTPUT_BUFFER[0] = b'-';
+            OUTPUT_BUFFER[1] = b'1';
+            OUTPUT_BUFFER[2] = b'0';
+            OUTPUT_BUFFER[3] = b'0';
+            OUTPUT_BUFFER[4] = b'0';
+            OUTPUT_BUFFER[5] = b'0';
+            OUTPUT_BUFFER[6] = b'0';
+            OUTPUT_BUFFER[7] = b'0';
+            OUTPUT_BUFFER[8] = b'\n';
+            idx += 9;
+        }
+        // -999_999 .. -99_999
+        for i in 1..900_001 {
+            if !TABLE.get_unchecked(i) {
+                continue;
+            }
+
+            let num = 1000000 - i;
+
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'-';
+            copy_nonoverlapping(
+                ITOA_LUT.get_unchecked((num / 10000)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
+                2,
+            );
+            copy_nonoverlapping(
+                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 3),
+                2,
+            );
+            copy_nonoverlapping(
+                ITOA_LUT.get_unchecked((num % 100)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 5),
+                2,
+            );
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 7) = b'\n';
+            idx += 8;
+        }
+        // -99_999 .. 0
+        // TODO: 최적화
+        for i in 900_001..1_000_000 {
             if !TABLE.get_unchecked(i as usize) {
                 continue;
             }
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'-';
-            idx += 1;
-
             let num = 1000000 - i;
-
             let offset = itoa(&mut buffer, num);
             let len = 8 - offset;
+
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'-';
+            idx += 1;
             copy_nonoverlapping(
                 buffer.get_unchecked(offset),
                 OUTPUT_BUFFER.get_unchecked_mut(idx),
@@ -50,26 +92,68 @@ fn main() {
             *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'\n';
             idx += 1;
         }
-        for i in 1_000_000..2_000_001 {
+        // 0 .. 100_000
+        // TODO: 최적화
+        for i in 1_000_000..1_100_000 {
+            if !TABLE.get_unchecked(i as usize) {
+                continue;
+            }
+
+            let num = i - 1000000;
+            let offset = itoa(&mut buffer, num);
+            let len = 8 - offset;
+
+            copy_nonoverlapping(
+                buffer.get_unchecked(offset),
+                OUTPUT_BUFFER.get_unchecked_mut(idx),
+                len,
+            );
+            idx += len;
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'\n';
+            idx += 1;
+        }
+        // 100_000 .. 1_000_000
+        for i in 1_100_000..2_000_000 {
             if !TABLE.get_unchecked(i as usize) {
                 continue;
             }
 
             let num = i - 1000000;
 
-            let offset = itoa(&mut buffer, num);
-            let len = 8 - offset;
             copy_nonoverlapping(
-                buffer.get_unchecked(offset),
-                OUTPUT_BUFFER.get_unchecked_mut(idx),
-                len,
+                ITOA_LUT.get_unchecked((num / 10000)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 0),
+                2,
             );
-            idx += len;
-            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'\n';
-            idx += 1;
+            copy_nonoverlapping(
+                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 2),
+                2,
+            );
+            copy_nonoverlapping(
+                ITOA_LUT.get_unchecked((num % 100)*2),
+                OUTPUT_BUFFER.get_unchecked_mut(idx + 4),
+                2,
+            );
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 6) = b'\n';
+            idx += 7;
+        }
+        // 1_000_000
+        if TABLE[2_000_000] {
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'1';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = b'0';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 2) = b'0';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 3) = b'0';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 4) = b'0';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 5) = b'0';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx + 6) = b'0';
+            // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
+            idx += 7;
         }
 
+        //
         // 출력
+        //
         print(&OUTPUT_BUFFER[..idx]);
     };
 }
@@ -199,6 +283,15 @@ mod parse {
     }
 }
 
+#[rustfmt::skip]
+const ITOA_LUT: &'static [u8; 200] = b"\
+    0001020304050607080910111213141516171819\
+    2021222324252627282930313233343536373839\
+    4041424344454647484950515253545556575859\
+    6061626364656667686970717273747576777879\
+    8081828384858687888990919293949596979899\
+";
+
 /// LUT, mod by 100. 0 <= val <= 1_000_000 일때에만 정상적으로 동작함.
 ///
 /// Reference:
@@ -208,15 +301,6 @@ mod parse {
 fn itoa(buffer: &mut [u8; 8], mut val: u32) -> usize {
     debug_assert!(val <= 1_000_000);
 
-    #[rustfmt::skip]
-    const TABLE: &'static [u8; 200] = b"\
-        0001020304050607080910111213141516171819\
-        2021222324252627282930313233343536373839\
-        4041424344454647484950515253545556575859\
-        6061626364656667686970717273747576777879\
-        8081828384858687888990919293949596979899\
-    ";
-
     let mut p = buffer.len();
     while val >= 100 {
         p -= 2;
@@ -224,7 +308,7 @@ fn itoa(buffer: &mut [u8; 8], mut val: u32) -> usize {
         val /= 100;
         unsafe {
             copy_nonoverlapping(
-                TABLE.get_unchecked(rem as usize * 2),
+                ITOA_LUT.get_unchecked(rem as usize * 2),
                 buffer.get_unchecked_mut(p),
                 2,
             )
@@ -233,7 +317,7 @@ fn itoa(buffer: &mut [u8; 8], mut val: u32) -> usize {
     p -= 2;
     unsafe {
         copy_nonoverlapping(
-            TABLE.get_unchecked(val as usize * 2),
+            ITOA_LUT.get_unchecked(val as usize * 2),
             buffer.get_unchecked_mut(p),
             2,
         )

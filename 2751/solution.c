@@ -77,17 +77,23 @@ static bool TABLE[2000001];
 static u8 OUTPUT_BUFFER[7888904];
 
 int main() {
+  //
   // stdin 길이 측정
+  //
   struct stat stat;
   const int ret = fstat(STDIN_FILENO, &stat);
   if (ret != 0) { return -1; }
   const off_t file_size = stat.st_size;
 
+  //
   // stdin mmap 수행
+  //
   u8 * const input = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, STDIN_FILENO, 0);
   if (input == MAP_FAILED) { return -1; }
 
+  //
   // 오토마타로 stdin 파싱
+  //
   off_t index = 0;
   const i32 count = parse(input, file_size, &index);
   for (i32 i = 0; i < count; ++i) {
@@ -96,38 +102,80 @@ int main() {
     TABLE[num + 1000000] = 1;
   }
 
+  //
   // 출력할 내용을 OUTPUT_BUFFER에 기록
+  //
   u32 idx = 0;
   u8 buffer[8];
-  for (u32 i = 0; i < 1000000; ++i) {
-    if (!TABLE[i]) { continue; }
 
-    OUTPUT_BUFFER[idx] = '-';
-    idx += 1;
+  // -1_000_000
+  if (TABLE[0]) {
+    memcpy(&OUTPUT_BUFFER[0], "-1000000\n", 9);
+    idx += 9;
+  }
+  // -999_999 .. -99_999
+  for (u32 i = 1; i < 900001; ++i) {
+    if (!TABLE[i]) { continue; }
 
     const u32 num = 1000000 - i;
 
+    OUTPUT_BUFFER[idx] = '-';
+    memcpy(&OUTPUT_BUFFER[idx + 1], &ITOA_LUT[(num / 10000)*2], 2);
+    memcpy(&OUTPUT_BUFFER[idx + 3], &ITOA_LUT[((num / 100) % 100)*2], 2);
+    memcpy(&OUTPUT_BUFFER[idx + 5], &ITOA_LUT[(num % 100)*2], 2);
+    OUTPUT_BUFFER[idx + 7] = '\n';
+    idx += 8;
+  }
+  // -99_999 .. 0
+  for (u32 i = 900001; i < 1000000; ++i) {
+    if (!TABLE[i]) { continue; }
+
+    const u32 num = 1000000 - i;
     const u8 offset = itoa(buffer, num);
     const u8 len = 8 - offset;
+
+    OUTPUT_BUFFER[idx] = '-';
+    idx += 1;
     memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
     idx += len;
     OUTPUT_BUFFER[idx] = '\n';
     idx += 1;
   }
-  for (u32 i = 1000000; i < 2000001; ++i) {
+  // 0 .. 100_000
+  for (u32 i = 1000000; i < 1100000; ++i) {
+    if (!TABLE[i]) { continue; }
+
+    const u32 num = i - 1000000;
+    const u8 offset = itoa(buffer, num);
+    const u8 len = 8 - offset;
+
+    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
+    idx += len;
+    OUTPUT_BUFFER[idx] = '\n';
+    idx += 1;
+  }
+  // 100_000 .. 1_000_000
+  for (u32 i = 1100000; i < 2000000; ++i) {
     if (!TABLE[i]) { continue; }
 
     const u32 num = i - 1000000;
 
-    const u8 offset = itoa(buffer, num);
-    const u8 len = 8 - offset;
-    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
-    idx += len;
-    OUTPUT_BUFFER[idx] = '\n';
-    idx += 1;
+    memcpy(&OUTPUT_BUFFER[idx + 0], &ITOA_LUT[(num / 10000)*2], 2);
+    memcpy(&OUTPUT_BUFFER[idx + 2], &ITOA_LUT[((num / 100) % 100)*2], 2);
+    memcpy(&OUTPUT_BUFFER[idx + 4], &ITOA_LUT[(num % 100)*2], 2);
+    OUTPUT_BUFFER[idx + 6] = '\n';
+    idx += 7;
+  }
+  // 1_000_000
+  if (TABLE[2000000]) {
+    memcpy(&OUTPUT_BUFFER[idx], "1000000", 7);
+    // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
+    idx += 7;
   }
 
+  //
   // 출력
+  //
   write(STDOUT_FILENO, OUTPUT_BUFFER, idx);
   _exit(0);
 }

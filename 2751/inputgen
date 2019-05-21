@@ -2,7 +2,7 @@
 import sys
 import random
 
-random.seed(0)
+random.seed(sys.argv[1] if sys.argv[1:] else 0)
 COUNT = 1_000_000
 print(COUNT)
 for n in random.sample(range(-1_000_000, 1_000_001), COUNT):

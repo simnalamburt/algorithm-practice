@@ -45,42 +45,28 @@ static i32 parse(const u8 *addr, off_t len, off_t *index) {
   return is_plus ? number : -number;
 }
 
-static const u16 ITOA_LUT[100] = {
-  0x3030, 0x3130, 0x3230, 0x3330, 0x3430, 0x3530, 0x3630, 0x3730, 0x3830, 0x3930,
-  0x3031, 0x3131, 0x3231, 0x3331, 0x3431, 0x3531, 0x3631, 0x3731, 0x3831, 0x3931,
-  0x3032, 0x3132, 0x3232, 0x3332, 0x3432, 0x3532, 0x3632, 0x3732, 0x3832, 0x3932,
-  0x3033, 0x3133, 0x3233, 0x3333, 0x3433, 0x3533, 0x3633, 0x3733, 0x3833, 0x3933,
-  0x3034, 0x3134, 0x3234, 0x3334, 0x3434, 0x3534, 0x3634, 0x3734, 0x3834, 0x3934,
-  0x3035, 0x3135, 0x3235, 0x3335, 0x3435, 0x3535, 0x3635, 0x3735, 0x3835, 0x3935,
-  0x3036, 0x3136, 0x3236, 0x3336, 0x3436, 0x3536, 0x3636, 0x3736, 0x3836, 0x3936,
-  0x3037, 0x3137, 0x3237, 0x3337, 0x3437, 0x3537, 0x3637, 0x3737, 0x3837, 0x3937,
-  0x3038, 0x3138, 0x3238, 0x3338, 0x3438, 0x3538, 0x3638, 0x3738, 0x3838, 0x3938,
-  0x3039, 0x3139, 0x3239, 0x3339, 0x3439, 0x3539, 0x3639, 0x3739, 0x3839, 0x3939,
-};
+static const char ITOA_LUT[] =
+  "0001020304050607080910111213141516171819"
+  "2021222324252627282930313233343536373839"
+  "4041424344454647484950515253545556575859"
+  "6061626364656667686970717273747576777879"
+  "8081828384858687888990919293949596979899";
 
-// LUT, mod by 100. -1000000 <= val <= 1000000 일때에만 정상적으로 동작함.
+// LUT, mod by 100. 0 <= val <= 1000000 일때에만 정상적으로 동작함.
 //
 // Reference: https://github.com/miloyip/itoa-benchmark
 //
 // NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
-static u8 itoa(u8 buffer[8], i32 val) {
-  if (val < 0) {
-    const u8 ret = itoa(buffer, -val);
-    buffer[ret - 1] = '-';
-    return ret - 1;
-  }
-
+static u8 itoa(u8 buffer[8], u32 val) {
   u8 p = 8;
   while (val >= 100) {
-    const i32 old = val;
-
     p -= 2;
+    const i32 rem = val % 100;
     val /= 100;
-    memcpy(&buffer[p], &ITOA_LUT[old - (val*100)], 2);
+    memcpy(&buffer[p], &ITOA_LUT[rem*2], 2);
   }
-
   p -= 2;
-  memcpy(&buffer[p], &ITOA_LUT[val], 2);
+  memcpy(&buffer[p], &ITOA_LUT[val*2], 2);
 
   return p + (val < 10);
 }
@@ -113,14 +99,26 @@ int main() {
   // 출력할 내용을 OUTPUT_BUFFER에 기록
   u32 idx = 0;
   u8 buffer[8];
-  for (i32 i = 0; i < 2000001; ++i) {
+  for (i32 i = 0; i < 1000000; ++i) {
+    if (!TABLE[i]) { continue; }
+
+    OUTPUT_BUFFER[idx] = '-';
+    idx += 1;
+
+    const u8 offset = itoa(buffer, 1000000 - i);
+    const u8 len = 8 - offset;
+    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
+    idx += len;
+    OUTPUT_BUFFER[idx] = '\n';
+    idx += 1;
+  }
+  for (i32 i = 1000000; i < 2000001; ++i) {
     if (!TABLE[i]) { continue; }
 
     const u8 offset = itoa(buffer, i - 1000000);
     const u8 len = 8 - offset;
     memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
     idx += len;
-
     OUTPUT_BUFFER[idx] = '\n';
     idx += 1;
   }

@@ -17,7 +17,9 @@ static mut OUTPUT_BUFFER: [u8; 7_888_904] = [0u8; 7_888_904];
 fn main() {
     #[target_feature(enable = "avx2")]
     unsafe {
+        //
         // stdin mmap 수행 및 오토마타로 stdin 파싱
+        //
         let mut iter = parse(read_input());
         let count = iter.next().unwrap() as usize;
         for num in iter.take(count) {
@@ -25,19 +27,37 @@ fn main() {
             TABLE[num as usize + 1_000_000] = true;
         }
 
+        //
         // 출력할 내용을 OUTPUT_BUFFER에 기록
+        //
         let mut idx = 0;
         let mut buffer: [u8; 8] = uninitialized();
-        for (i, val) in TABLE.into_iter().enumerate() {
-            if !val {
+
+        for i in -1_000_000..0 {
+            if !TABLE.get_unchecked(i as usize + 1_000_000) {
                 continue;
             }
 
-            let offset = itoa(&mut buffer, i as i32 - 1_000_000);
+            let offset = itoa(&mut buffer, -i as u32);
             let len = 8 - offset;
+
+            OUTPUT_BUFFER[idx] = b'-';
+            idx += 1;
             copy_nonoverlapping(&buffer[offset], &mut OUTPUT_BUFFER[idx], len);
             idx += len;
+            OUTPUT_BUFFER[idx] = b'\n';
+            idx += 1;
+        }
+        for i in 0..1_000_001 {
+            if !TABLE[i as usize + 1_000_000] {
+                continue;
+            }
 
+            let offset = itoa(&mut buffer, i);
+            let len = 8 - offset;
+
+            copy_nonoverlapping(&buffer[offset], &mut OUTPUT_BUFFER[idx], len);
+            idx += len;
             OUTPUT_BUFFER[idx] = b'\n';
             idx += 1;
         }
@@ -157,7 +177,9 @@ mod parse {
                 let len = self.addr.len();
                 while self.index < len {
                     let ch = self.addr[self.index];
-                    if ch < b'0' || b'9' < ch { break }
+                    if ch < b'0' || b'9' < ch {
+                        break;
+                    }
                     number = 10 * number + (ch - b'0') as i32;
                     self.index += 1;
                 }
@@ -169,46 +191,33 @@ mod parse {
     }
 }
 
-/// LUT, mod by 100. -1000000 <= val <= 1000000 일때에만 정상적으로 동작함.
+/// LUT, mod by 100. 0 <= val <= 1_000_000 일때에만 정상적으로 동작함.
 ///
 /// Reference:
 ///   https://github.com/miloyip/itoa-benchmark
 ///
 /// NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
-fn itoa(buffer: &mut [u8; 8], val: i32) -> usize {
-    #[rustfmt::skip]
-    const TABLE: [&'static [u8; 2]; 100] = [
-        b"00", b"01", b"02", b"03", b"04", b"05", b"06", b"07", b"08", b"09",
-        b"10", b"11", b"12", b"13", b"14", b"15", b"16", b"17", b"18", b"19",
-        b"20", b"21", b"22", b"23", b"24", b"25", b"26", b"27", b"28", b"29",
-        b"30", b"31", b"32", b"33", b"34", b"35", b"36", b"37", b"38", b"39",
-        b"40", b"41", b"42", b"43", b"44", b"45", b"46", b"47", b"48", b"49",
-        b"50", b"51", b"52", b"53", b"54", b"55", b"56", b"57", b"58", b"59",
-        b"60", b"61", b"62", b"63", b"64", b"65", b"66", b"67", b"68", b"69",
-        b"70", b"71", b"72", b"73", b"74", b"75", b"76", b"77", b"78", b"79",
-        b"80", b"81", b"82", b"83", b"84", b"85", b"86", b"87", b"88", b"89",
-        b"90", b"91", b"92", b"93", b"94", b"95", b"96", b"97", b"98", b"99",
-    ];
+fn itoa(buffer: &mut [u8; 8], mut val: u32) -> usize {
+    debug_assert!(val <= 1_000_000);
 
-    if val < 0 {
-        let ret = itoa(buffer, -val);
-        buffer[ret - 1] = b'-';
-        return ret - 1;
-    }
+    #[rustfmt::skip]
+    const TABLE: &'static [u8; 200] = b"\
+        0001020304050607080910111213141516171819\
+        2021222324252627282930313233343536373839\
+        4041424344454647484950515253545556575859\
+        6061626364656667686970717273747576777879\
+        8081828384858687888990919293949596979899\
+    ";
 
     let mut p = buffer.len();
-    let mut val = val as usize;
-
     while val >= 100 {
-        let old = val;
         p -= 2;
+        let rem: u32 = val % 100;
         val /= 100;
-        // NOTE: `old - (val * 100)` is faster than `old % 100`
-        unsafe { copy_nonoverlapping(&TABLE[old - (val * 100)][0], &mut buffer[p], 2) }
+        unsafe { copy_nonoverlapping(TABLE.get_unchecked(rem as usize * 2), buffer.get_unchecked_mut(p), 2) }
     }
-
     p -= 2;
-    unsafe { copy_nonoverlapping(&TABLE[val][0], &mut buffer[p], 2) }
+    unsafe { copy_nonoverlapping(TABLE.get_unchecked(val as usize * 2), buffer.get_unchecked_mut(p), 2) }
 
     p + if val < 10 { 1 } else { 0 }
 }

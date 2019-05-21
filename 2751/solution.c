@@ -1,9 +1,7 @@
-// gcc solution.c -Wall -Wextra -Wpedantic -Werror -std=c17
+// clang -O3 solution.c -Wall -Wextra -Wpedantic -Werror -std=c17
 //
 // Reference:
 //   https://www.acmicpc.net/problem/2751
-#pragma GCC optimize("O3")
-#pragma GCC target("arch=haswell")
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -84,6 +82,9 @@ static u8 itoa(u8 buffer[8], i32 val) {
 
 static bool TABLE[2000001];
 
+// /dev/stdin 에 쓰면 불필요하게 IO로 시간 쓸까봐 .bss 에 메모리 만듬
+static u8 OUTPUT_BUFFER[7888904];
+
 int main() {
   // stdin 길이 측정
   struct stat stat;
@@ -92,14 +93,14 @@ int main() {
   const off_t file_size = stat.st_size;
 
   // stdin mmap 수행
-  u8 * const addr = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, STDIN_FILENO, 0);
-  if (addr == MAP_FAILED) { return -1; }
+  u8 * const input = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, STDIN_FILENO, 0);
+  if (input == MAP_FAILED) { return -1; }
 
   // 오토마타로 stdin 파싱
   off_t index = 0;
-  const i32 count = parse(addr, file_size, &index);
+  const i32 count = parse(input, file_size, &index);
   for (i32 i = 0; i < count; ++i) {
-    const i32 num = parse(addr, file_size, &index);
+    const i32 num = parse(input, file_size, &index);
     TABLE[num + 1000000] = 1;
   }
 
@@ -111,14 +112,14 @@ int main() {
 
     const u8 offset = itoa(buffer, i - 1000000);
     const u8 len = 8 - offset;
-    memcpy(&addr[idx], buffer + offset, len);
+    memcpy(&OUTPUT_BUFFER[idx], buffer + offset, len);
     idx += len;
 
-    addr[idx] = '\n';
+    OUTPUT_BUFFER[idx] = '\n';
     idx += 1;
   }
 
   // 출력
-  write(STDOUT_FILENO, addr, idx);
+  write(STDOUT_FILENO, OUTPUT_BUFFER, idx);
   _exit(0);
 }

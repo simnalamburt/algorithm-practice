@@ -18,22 +18,27 @@
 typedef int32_t i32;
 typedef uint8_t u8;
 typedef uint16_t u16;
-typedef uint64_t u64;
+typedef uint32_t u32;
 
-static i32 parse(const u8 *addr, off_t file_size, off_t *index) {
+// 틀린 입력이 절대 들어오지 않고 입력이 스펙대로만 들어온다고 가정하면 더 빠른
+// atoi를 만들 수 있다.
+static i32 parse(const u8 *addr, off_t len, off_t *index) {
   bool is_plus = true;
   i32 number = 0;
+
+  // NOTE: 입력이 스펙대로만 들어온다면 self.addr[self.index]에 접근하기 전에
+  // 바운더리 체크를 먼저 할 필요가 없음
 
   if (addr[*index] == '-') {
     is_plus = false;
     *index += 1;
   }
 
-  for (; *index < file_size; ++*index) {
+  while (*index < len) {
     const u8 ch = addr[*index];
-    const bool is_num = '0' <= ch && ch <= '9';
-    if (!is_num) { break; }
+    if (ch < '0' || '9' < ch) { break; }
     number = 10*number + ch - '0';
+    *index += 1;
   }
 
   *index += 1;
@@ -101,18 +106,19 @@ int main() {
   const i32 count = parse(input, file_size, &index);
   for (i32 i = 0; i < count; ++i) {
     const i32 num = parse(input, file_size, &index);
+    // -1_000_000 <= num <= 1_000_000
     TABLE[num + 1000000] = 1;
   }
 
-  // 출력할 내용을 mmap에 기록
-  u64 idx = 0;
+  // 출력할 내용을 OUTPUT_BUFFER에 기록
+  u32 idx = 0;
   u8 buffer[8];
   for (i32 i = 0; i < 2000001; ++i) {
     if (!TABLE[i]) { continue; }
 
     const u8 offset = itoa(buffer, i - 1000000);
     const u8 len = 8 - offset;
-    memcpy(&OUTPUT_BUFFER[idx], buffer + offset, len);
+    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
     idx += len;
 
     OUTPUT_BUFFER[idx] = '\n';

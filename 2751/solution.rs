@@ -7,33 +7,43 @@
 use mmap::read_input;
 use parse::parse;
 use std::io::prelude::*;
-use std::io::{stdout, BufWriter};
+use std::io::stdout;
 use std::mem::uninitialized;
+use std::ptr::copy_nonoverlapping;
 
 static mut TABLE: [bool; 2_000_001] = [false; 2_000_001];
+static mut OUTPUT_BUFFER: [u8; 7_888_904] = [0u8; 7_888_904];
 
 fn main() {
     #[target_feature(enable = "avx2")]
     unsafe {
-        for num in parse(read_input()).skip(1) {
+        // stdin mmap 수행 및 오토마타로 stdin 파싱
+        let mut iter = parse(read_input());
+        let count = iter.next().unwrap() as usize;
+        for num in iter.take(count) {
             // -1_000_000 <= num <= 1_000_000
             TABLE[num as usize + 1_000_000] = true;
         }
 
-        let stdout = stdout();
-        let handle = stdout.lock();
-        let mut writer = BufWriter::new(handle);
-
+        // 출력할 내용을 OUTPUT_BUFFER에 기록
+        let mut idx = 0;
         let mut buffer: [u8; 8] = uninitialized();
         for (i, val) in TABLE.into_iter().enumerate() {
             if !val {
                 continue;
             }
-            let ret = itoa(&mut buffer, i as i32 - 1_000_000);
 
-            writer.write_all(&buffer[ret..]).unwrap();
-            writer.write_all(b"\n").unwrap();
+            let offset = itoa(&mut buffer, i as i32 - 1_000_000);
+            let len = 8 - offset;
+            copy_nonoverlapping(&buffer[offset], &mut OUTPUT_BUFFER[idx], len);
+            idx += len;
+
+            OUTPUT_BUFFER[idx] = b'\n';
+            idx += 1;
         }
+
+        // 출력
+        stdout().write_all(&OUTPUT_BUFFER[0..idx]).unwrap();
     }
 }
 
@@ -114,7 +124,8 @@ mod mmap {
 }
 
 mod parse {
-    //! 항상 valid한 입력만이 들어온다고 가정함
+    //! 틀린 입력이 절대 들어오지 않고 입력이 스펙대로만 들어온다고 가정하면 더 빠른 atoi를 만들 수
+    //! 있다.
     use std::iter::Iterator;
 
     pub struct FastParser<'a> {
@@ -132,40 +143,27 @@ mod parse {
         fn next(&mut self) -> Option<Self::Item> {
             #[target_feature(enable = "avx2")]
             {
-                let mut is_wip = false;
                 let mut is_plus = true;
                 let mut number = 0;
 
-                if self.addr.len() <= self.index {
-                    return None;
-                }
+                // NOTE: 입력이 스펙대로만 들어온다면 self.addr[self.index]에 접근하기 전에
+                // 바운더리 체크를 먼저 할 필요가 없음
 
                 if self.addr[self.index] == b'-' {
                     is_plus = false;
                     self.index += 1;
                 }
 
-                while self.index < self.addr.len() {
-                    match self.addr[self.index] {
-                        ch @ b'0'..=b'9' => {
-                            is_wip = true;
-                            number = 10 * number + (ch - b'0') as i32;
-                        }
-                        _ => {
-                            self.index += 1;
-                            return Some(if is_plus { number } else { -number });
-                        }
-                    };
-
+                let len = self.addr.len();
+                while self.index < len {
+                    let ch = self.addr[self.index];
+                    if ch < b'0' || b'9' < ch { break }
+                    number = 10 * number + (ch - b'0') as i32;
                     self.index += 1;
                 }
 
-                // 파싱중 EOF를 만남
-                if is_wip {
-                    return Some(if is_plus { number } else { -number });
-                }
-
-                None
+                self.index += 1;
+                return Some(if is_plus { number } else { -number });
             }
         }
     }
@@ -203,16 +201,14 @@ fn itoa(buffer: &mut [u8; 8], val: i32) -> usize {
 
     while val >= 100 {
         let old = val;
-
         p -= 2;
         val /= 100;
-        buffer[p] = TABLE[old - (val * 100)][0];
-        buffer[p + 1] = TABLE[old - (val * 100)][1];
+        // NOTE: `old - (val * 100)` is faster than `old % 100`
+        unsafe { copy_nonoverlapping(&TABLE[old - (val * 100)][0], &mut buffer[p], 2) }
     }
 
     p -= 2;
-    buffer[p] = TABLE[val][0];
-    buffer[p + 1] = TABLE[val][1];
+    unsafe { copy_nonoverlapping(&TABLE[val][0], &mut buffer[p], 2) }
 
     p + if val < 10 { 1 } else { 0 }
 }

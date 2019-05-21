@@ -21,7 +21,7 @@ fn main() {
         let count = iter.next().unwrap() as usize;
         for num in iter.take(count) {
             // -1_000_000 <= num <= 1_000_000
-            TABLE[num as usize + 1_000_000] = true;
+            *TABLE.get_unchecked_mut(num as usize + 1_000_000) = true;
         }
 
         //
@@ -29,33 +29,43 @@ fn main() {
         //
         let mut idx = 0;
         let mut buffer: [u8; 8] = uninitialized();
-
-        for i in -1_000_000..0 {
-            if !TABLE.get_unchecked(i as usize + 1_000_000) {
+        for i in 0..1_000_000 {
+            if !TABLE.get_unchecked(i as usize) {
                 continue;
             }
 
-            let offset = itoa(&mut buffer, -i as u32);
-            let len = 8 - offset;
-
-            OUTPUT_BUFFER[idx] = b'-';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'-';
             idx += 1;
-            copy_nonoverlapping(&buffer[offset], &mut OUTPUT_BUFFER[idx], len);
+
+            let num = 1000000 - i;
+
+            let offset = itoa(&mut buffer, num);
+            let len = 8 - offset;
+            copy_nonoverlapping(
+                buffer.get_unchecked(offset),
+                OUTPUT_BUFFER.get_unchecked_mut(idx),
+                len,
+            );
             idx += len;
-            OUTPUT_BUFFER[idx] = b'\n';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'\n';
             idx += 1;
         }
-        for i in 0..1_000_001 {
-            if !TABLE[i as usize + 1_000_000] {
+        for i in 1_000_000..2_000_001 {
+            if !TABLE.get_unchecked(i as usize) {
                 continue;
             }
 
-            let offset = itoa(&mut buffer, i);
-            let len = 8 - offset;
+            let num = i - 1000000;
 
-            copy_nonoverlapping(&buffer[offset], &mut OUTPUT_BUFFER[idx], len);
+            let offset = itoa(&mut buffer, num);
+            let len = 8 - offset;
+            copy_nonoverlapping(
+                buffer.get_unchecked(offset),
+                OUTPUT_BUFFER.get_unchecked_mut(idx),
+                len,
+            );
             idx += len;
-            OUTPUT_BUFFER[idx] = b'\n';
+            *OUTPUT_BUFFER.get_unchecked_mut(idx) = b'\n';
             idx += 1;
         }
 
@@ -141,11 +151,7 @@ mod libc {
     }
 
     pub unsafe fn print(buf: &[u8]) {
-        write(
-            STDOUT_FILENO,
-            buf.as_ptr() as *const c_void,
-            buf.len(),
-        );
+        write(STDOUT_FILENO, buf.as_ptr() as *const c_void, buf.len());
     }
 }
 
@@ -167,32 +173,28 @@ mod parse {
         type Item = i32;
 
         fn next(&mut self) -> Option<Self::Item> {
-            #[target_feature(enable = "avx2")]
-            {
-                let mut is_plus = true;
-                let mut number = 0;
+            let mut is_plus = true;
+            let mut number = 0;
 
-                // NOTE: 입력이 스펙대로만 들어온다면 self.addr[self.index]에 접근하기 전에
-                // 바운더리 체크를 먼저 할 필요가 없음
-
-                if self.addr[self.index] == b'-' {
-                    is_plus = false;
-                    self.index += 1;
-                }
-
-                let len = self.addr.len();
-                while self.index < len {
-                    let ch = self.addr[self.index];
-                    if ch < b'0' || b'9' < ch {
-                        break;
-                    }
-                    number = 10 * number + (ch - b'0') as i32;
-                    self.index += 1;
-                }
-
+            // NOTE: 입력이 스펙대로만 들어온다면 self.addr[self.index]에 접근하기 전에
+            // 바운더리 체크를 먼저 할 필요가 없음
+            if *unsafe { self.addr.get_unchecked(self.index) } == b'-' {
+                is_plus = false;
                 self.index += 1;
-                return Some(if is_plus { number } else { -number });
             }
+
+            let len = self.addr.len();
+            while self.index < len {
+                let ch = *unsafe { self.addr.get_unchecked(self.index) };
+                if ch < b'0' || b'9' < ch {
+                    break;
+                }
+                number = 10 * number + (ch - b'0') as i32;
+                self.index += 1;
+            }
+
+            self.index += 1;
+            return Some(if is_plus { number } else { -number });
         }
     }
 }

@@ -99,23 +99,27 @@ int main() {
   // 출력할 내용을 OUTPUT_BUFFER에 기록
   u32 idx = 0;
   u8 buffer[8];
-  for (i32 i = 0; i < 1000000; ++i) {
+  for (u32 i = 0; i < 1000000; ++i) {
     if (!TABLE[i]) { continue; }
 
     OUTPUT_BUFFER[idx] = '-';
     idx += 1;
 
-    const u8 offset = itoa(buffer, 1000000 - i);
+    const u32 num = 1000000 - i;
+
+    const u8 offset = itoa(buffer, num);
     const u8 len = 8 - offset;
     memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
     idx += len;
     OUTPUT_BUFFER[idx] = '\n';
     idx += 1;
   }
-  for (i32 i = 1000000; i < 2000001; ++i) {
+  for (u32 i = 1000000; i < 2000001; ++i) {
     if (!TABLE[i]) { continue; }
 
-    const u8 offset = itoa(buffer, i - 1000000);
+    const u32 num = i - 1000000;
+
+    const u8 offset = itoa(buffer, num);
     const u8 len = 8 - offset;
     memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
     idx += len;

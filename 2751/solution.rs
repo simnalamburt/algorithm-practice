@@ -4,10 +4,8 @@
 //! Reference:
 //!   https://www.acmicpc.net/problem/2751
 
-use mmap::read_input;
+use libc::{input, print};
 use parse::parse;
-use std::io::prelude::*;
-use std::io::stdout;
 use std::mem::uninitialized;
 use std::ptr::copy_nonoverlapping;
 
@@ -15,12 +13,11 @@ static mut TABLE: [bool; 2_000_001] = [false; 2_000_001];
 static mut OUTPUT_BUFFER: [u8; 7_888_904] = [0u8; 7_888_904];
 
 fn main() {
-    #[target_feature(enable = "avx2")]
     unsafe {
         //
         // stdin mmap 수행 및 오토마타로 stdin 파싱
         //
-        let mut iter = parse(read_input());
+        let mut iter = parse(input());
         let count = iter.next().unwrap() as usize;
         for num in iter.take(count) {
             // -1_000_000 <= num <= 1_000_000
@@ -63,21 +60,22 @@ fn main() {
         }
 
         // 출력
-        stdout().write_all(&OUTPUT_BUFFER[0..idx]).unwrap();
-    }
+        print(&OUTPUT_BUFFER[..idx]);
+    };
 }
 
-mod mmap {
-    use std::ffi::c_void as void;
+mod libc {
+    use std::ffi::c_void;
     use std::mem::uninitialized;
     use std::process::exit;
     use std::ptr::null_mut;
     use std::slice::from_raw_parts;
 
     const STDIN_FILENO: i32 = 0;
+    const STDOUT_FILENO: i32 = 1;
     const PROT_READ: i32 = 1;
     const MAP_PRIVATE: i32 = 1;
-    const MAP_FAILED: *mut void = std::usize::MAX as *mut _;
+    const MAP_FAILED: *mut c_void = std::usize::MAX as *mut _;
 
     // Linux x86-64, glibc 8.3.0
     #[repr(C)]
@@ -104,17 +102,17 @@ mod mmap {
     extern "C" {
         fn fstat(fildes: i32, buf: *mut stat) -> i32;
         fn mmap(
-            addr: *mut void,
+            addr: *mut c_void,
             len: usize,
             prot: i32,
             flags: i32,
             fd: i32,
             offset: i64,
-        ) -> *mut void;
+        ) -> *mut c_void;
+        fn write(fd: i32, buf: *const c_void, count: usize) -> isize;
     }
 
-    #[target_feature(enable = "avx2")]
-    pub unsafe fn read_input<'a>() -> &'a [u8] {
+    pub unsafe fn input<'a>() -> &'a [u8] {
         // Linux x86-64, glibc 8.3.0
         debug_assert!(std::mem::size_of::<stat>() == 144);
 
@@ -140,6 +138,14 @@ mod mmap {
         }
 
         from_raw_parts(addr as *mut u8, file_size)
+    }
+
+    pub unsafe fn print(buf: &[u8]) {
+        write(
+            STDOUT_FILENO,
+            buf.as_ptr() as *const c_void,
+            buf.len(),
+        );
     }
 }
 
@@ -214,10 +220,22 @@ fn itoa(buffer: &mut [u8; 8], mut val: u32) -> usize {
         p -= 2;
         let rem: u32 = val % 100;
         val /= 100;
-        unsafe { copy_nonoverlapping(TABLE.get_unchecked(rem as usize * 2), buffer.get_unchecked_mut(p), 2) }
+        unsafe {
+            copy_nonoverlapping(
+                TABLE.get_unchecked(rem as usize * 2),
+                buffer.get_unchecked_mut(p),
+                2,
+            )
+        }
     }
     p -= 2;
-    unsafe { copy_nonoverlapping(TABLE.get_unchecked(val as usize * 2), buffer.get_unchecked_mut(p), 2) }
+    unsafe {
+        copy_nonoverlapping(
+            TABLE.get_unchecked(val as usize * 2),
+            buffer.get_unchecked_mut(p),
+            2,
+        )
+    }
 
     p + if val < 10 { 1 } else { 0 }
 }

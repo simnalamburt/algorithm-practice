@@ -36,6 +36,21 @@ fn main() {
         ";
         let mut idx = 0;
 
+        macro_rules! assign {
+            ($dst_idx:expr, $value:expr) => {
+                *OUTPUT_BUFFER.get_unchecked_mut(idx + $dst_idx) = $value;
+            };
+        }
+        macro_rules! memcpy {
+            ($dst_idx:expr, $src_idx:expr) => {
+                copy_nonoverlapping(
+                    ITOA_LUT.get_unchecked($src_idx * 2),
+                    OUTPUT_BUFFER.get_unchecked_mut(idx + $dst_idx),
+                    2,
+                );
+            };
+        }
+
         // -1_000_000
         if TABLE[0] {
             OUTPUT_BUFFER[0] = b'-';
@@ -50,248 +65,128 @@ fn main() {
             idx += 9;
         }
         // -999_999 .. -99_999
-        for i in 1..900_001 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1..900_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num / 10000)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 3),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 5),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 7) = b'\n';
+            assign!(0, b'-');
+            memcpy!(1, num / 10000);
+            memcpy!(3, (num / 100) % 100);
+            memcpy!(5, num % 100);
+            assign!(7, b'\n');
             idx += 8;
         }
         // -99_999 .. -9_999
-        for i in 900_001..990_001 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (900_001..990_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = (num / 10000) as u8 + b'0';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 2),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 4),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 6) = b'\n';
+            assign!(0, b'-');
+            assign!(1, (num / 10000) as u8 + b'0');
+            memcpy!(2, (num / 100) % 100);
+            memcpy!(4, num % 100);
+            assign!(6, b'\n');
             idx += 7;
         }
         // -9_999 .. -999
-        for i in 990_001..999_001 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (990_001..999_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num / 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 3),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 5) = b'\n';
+            assign!(0, b'-');
+            memcpy!(1, num / 100);
+            memcpy!(3, num % 100);
+            assign!(5, b'\n');
             idx += 6;
         }
         // -999 .. -99
-        for i in 999_001..999_901 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (999_001..999_901).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = (num / 100) as u8 + b'0';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 2),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 4) = b'\n';
+            assign!(0, b'-');
+            assign!(1, (num / 100) as u8 + b'0');
+            memcpy!(2, num % 100);
+            assign!(4, b'\n');
             idx += 5;
         }
         // -99 .. -9
-        for i in 999_901..999_991 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (999_901..999_991).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(num*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 3) = b'\n';
+            assign!(0, b'-');
+            memcpy!(1, num);
+            assign!(3, b'\n');
             idx += 4;
         }
         // -9 .. 0
-        for i in 999_991..1_000_000 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (999_991..1_000_000).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'-';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = num as u8 + b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 2) = b'\n';
+            assign!(0, b'-');
+            assign!(1, num as u8 + b'0');
+            assign!(2, b'\n');
             idx += 3;
         }
         // 0 .. 10
-        for i in 1_000_000..1_000_010 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1_000_000..1_000_010).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = num as u8 + b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = b'\n';
+            assign!(0, num as u8 + b'0');
+            assign!(1, b'\n');
             idx += 2;
         }
         // 10 .. 100
-        for i in 1_000_010..1_000_100 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1_000_010..1_000_100).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(num*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 0),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 2) = b'\n';
+            memcpy!(0, num);
+            assign!(2, b'\n');
             idx += 3;
         }
         // 100 .. 1_000
-        for i in 1_000_100..1_001_000 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1_000_100..1_001_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = (num / 100) as u8 + b'0';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 3) = b'\n';
+            assign!(0, (num / 100) as u8 + b'0');
+            memcpy!(1, num % 100);
+            assign!(3, b'\n');
             idx += 4;
         }
         // 1_000 .. 10_000
-        for i in 1_001_000..1_010_000 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1_001_000..1_010_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num / 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 0),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 2),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 4) = b'\n';
+            memcpy!(0, num / 100);
+            memcpy!(2, num % 100);
+            assign!(4, b'\n');
             idx += 5;
         }
         // 10_000 .. 100_000
-        for i in 1_010_000..1_100_000 {
-            if !TABLE.get_unchecked(i) {
-                continue;
-            }
-
+        for i in (1_010_000..1_100_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            *OUTPUT_BUFFER.get_unchecked_mut(idx) = (num / 10000) as u8 + b'0';
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 1),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 3),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 5) = b'\n';
+            assign!(0, (num / 10000) as u8 + b'0');
+            memcpy!(1, (num / 100) % 100);
+            memcpy!(3, num % 100);
+            assign!(5, b'\n');
             idx += 6;
         }
         // 100_000 .. 1_000_000
-        for i in 1_100_000..2_000_000 {
-            if !TABLE.get_unchecked(i as usize) {
-                continue;
-            }
-
+        for i in (1_100_000..2_000_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num / 10000)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 0),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked(((num / 100) % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 2),
-                2,
-            );
-            copy_nonoverlapping(
-                ITOA_LUT.get_unchecked((num % 100)*2),
-                OUTPUT_BUFFER.get_unchecked_mut(idx + 4),
-                2,
-            );
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 6) = b'\n';
+            memcpy!(0, num / 10000);
+            memcpy!(2, (num / 100) % 100);
+            memcpy!(4, num % 100);
+            assign!(6, b'\n');
             idx += 7;
         }
         // 1_000_000
         if TABLE[2_000_000] {
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 0) = b'1';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 1) = b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 2) = b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 3) = b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 4) = b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 5) = b'0';
-            *OUTPUT_BUFFER.get_unchecked_mut(idx + 6) = b'0';
+            assign!(0, b'1');
+            assign!(1, b'0');
+            assign!(2, b'0');
+            assign!(3, b'0');
+            assign!(4, b'0');
+            assign!(5, b'0');
+            assign!(6, b'0');
             // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
             idx += 7;
         }

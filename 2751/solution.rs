@@ -8,18 +8,8 @@ use libc::{input, print};
 use parse::parse;
 use std::ptr::copy_nonoverlapping;
 
-static mut BITSET: [u64; 62_501] = [0; 62_501];
+static mut TABLE: [bool; 2_000_001] = [false; 2_000_001];
 static mut OUTPUT_BUFFER: [u8; 7_888_904] = [0u8; 7_888_904];
-
-macro_rules! table {
-    ($idx:expr) => (
-        ((*BITSET.get_unchecked($idx >> 6)) >> ($idx & 0b111111)) & 1 != 0
-    );
-    ($idx:expr; set true) => {
-        let idx = $idx;
-        *BITSET.get_unchecked_mut(idx >> 6) |= 1<<(idx & 0b111111);
-    };
-}
 
 fn main() {
     unsafe {
@@ -30,7 +20,7 @@ fn main() {
         let count = iter.next().unwrap() as usize;
         for num in iter.take(count) {
             // -1_000_000 <= num <= 1_000_000
-            table!(num as usize + 1_000_000; set true);
+            *TABLE.get_unchecked_mut(num as usize + 1_000_000) = true;
         }
 
         //
@@ -62,7 +52,7 @@ fn main() {
         }
 
         // -1_000_000
-        if table!(0) {
+        if TABLE[0] {
             OUTPUT_BUFFER[0] = b'-';
             OUTPUT_BUFFER[1] = b'1';
             OUTPUT_BUFFER[2] = b'0';
@@ -75,7 +65,7 @@ fn main() {
             idx += 9;
         }
         // -999_999 .. -99_999
-        for i in (1..900_001).filter(|i| table!(*i)) {
+        for i in (1..900_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -86,7 +76,7 @@ fn main() {
             idx += 8;
         }
         // -99_999 .. -9_999
-        for i in (900_001..990_001).filter(|i| table!(*i)) {
+        for i in (900_001..990_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -97,7 +87,7 @@ fn main() {
             idx += 7;
         }
         // -9_999 .. -999
-        for i in (990_001..999_001).filter(|i| table!(*i)) {
+        for i in (990_001..999_001).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -107,7 +97,7 @@ fn main() {
             idx += 6;
         }
         // -999 .. -99
-        for i in (999_001..999_901).filter(|i| table!(*i)) {
+        for i in (999_001..999_901).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -117,7 +107,7 @@ fn main() {
             idx += 5;
         }
         // -99 .. -9
-        for i in (999_901..999_991).filter(|i| table!(*i)) {
+        for i in (999_901..999_991).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -126,7 +116,7 @@ fn main() {
             idx += 4;
         }
         // -9 .. 0
-        for i in (999_991..1_000_000).filter(|i| table!(*i)) {
+        for i in (999_991..1_000_000).filter(|i| TABLE[*i]) {
             let num = 1000000 - i;
 
             assign!(0, b'-');
@@ -135,7 +125,7 @@ fn main() {
             idx += 3;
         }
         // 0 .. 10
-        for i in (1_000_000..1_000_010).filter(|i| table!(*i)) {
+        for i in (1_000_000..1_000_010).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             assign!(0, num as u8 + b'0');
@@ -143,7 +133,7 @@ fn main() {
             idx += 2;
         }
         // 10 .. 100
-        for i in (1_000_010..1_000_100).filter(|i| table!(*i)) {
+        for i in (1_000_010..1_000_100).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             memcpy!(0, num);
@@ -151,7 +141,7 @@ fn main() {
             idx += 3;
         }
         // 100 .. 1_000
-        for i in (1_000_100..1_001_000).filter(|i| table!(*i)) {
+        for i in (1_000_100..1_001_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             assign!(0, (num / 100) as u8 + b'0');
@@ -160,7 +150,7 @@ fn main() {
             idx += 4;
         }
         // 1_000 .. 10_000
-        for i in (1_001_000..1_010_000).filter(|i| table!(*i)) {
+        for i in (1_001_000..1_010_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             memcpy!(0, num / 100);
@@ -169,7 +159,7 @@ fn main() {
             idx += 5;
         }
         // 10_000 .. 100_000
-        for i in (1_010_000..1_100_000).filter(|i| table!(*i)) {
+        for i in (1_010_000..1_100_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             assign!(0, (num / 10000) as u8 + b'0');
@@ -179,7 +169,7 @@ fn main() {
             idx += 6;
         }
         // 100_000 .. 1_000_000
-        for i in (1_100_000..2_000_000).filter(|i| table!(*i)) {
+        for i in (1_100_000..2_000_000).filter(|i| TABLE[*i]) {
             let num = i - 1000000;
 
             memcpy!(0, num / 10000);
@@ -189,7 +179,7 @@ fn main() {
             idx += 7;
         }
         // 1_000_000
-        if table!(2_000_000) {
+        if TABLE[2_000_000] {
             assign!(0, b'1');
             assign!(1, b'0');
             assign!(2, b'0');

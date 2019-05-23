@@ -52,25 +52,6 @@ static const char ITOA_LUT[] =
   "6061626364656667686970717273747576777879"
   "8081828384858687888990919293949596979899";
 
-// LUT, mod by 100. 0 <= val <= 1000000 일때에만 정상적으로 동작함.
-//
-// Reference: https://github.com/miloyip/itoa-benchmark
-//
-// NOTE: 카운팅소트만 아니었다면 10진법 대신 16진법을 써서 성능을 미세하게 올릴 수 있다.
-static u8 itoa(u8 buffer[8], u32 val) {
-  u8 p = 8;
-  while (val >= 100) {
-    p -= 2;
-    const i32 rem = val % 100;
-    val /= 100;
-    memcpy(&buffer[p], &ITOA_LUT[rem*2], 2);
-  }
-  p -= 2;
-  memcpy(&buffer[p], &ITOA_LUT[val*2], 2);
-
-  return p + (val < 10);
-}
-
 static bool TABLE[2000001];
 
 // /dev/stdin 에 쓰면 불필요하게 IO로 시간 쓸까봐 .bss 에 메모리 만듬
@@ -106,7 +87,9 @@ int main() {
   // 출력할 내용을 OUTPUT_BUFFER에 기록
   //
   u32 idx = 0;
-  u8 buffer[8];
+#define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE[i])
+#define ASSIGN(DST, LITERAL) do { OUTPUT_BUFFER[idx + DST] = (LITERAL); } while(0)
+#define MEMCPY(DST, SRC) do { memcpy(&OUTPUT_BUFFER[idx + DST], &ITOA_LUT[(SRC)*2], 2); } while(0)
 
   // -1_000_000
   if (TABLE[0]) {
@@ -114,56 +97,117 @@ int main() {
     idx += 9;
   }
   // -999_999 .. -99_999
-  for (u32 i = 1; i < 900001; ++i) {
-    if (!TABLE[i]) { continue; }
-
+  ITER(1, 900001) {
     const u32 num = 1000000 - i;
 
-    OUTPUT_BUFFER[idx] = '-';
-    memcpy(&OUTPUT_BUFFER[idx + 1], &ITOA_LUT[(num / 10000)*2], 2);
-    memcpy(&OUTPUT_BUFFER[idx + 3], &ITOA_LUT[((num / 100) % 100)*2], 2);
-    memcpy(&OUTPUT_BUFFER[idx + 5], &ITOA_LUT[(num % 100)*2], 2);
-    OUTPUT_BUFFER[idx + 7] = '\n';
+    ASSIGN(0, '-');
+    MEMCPY(1, num / 10000);
+    MEMCPY(3, (num / 100) % 100);
+    MEMCPY(5, num % 100);
+    ASSIGN(7, '\n');
     idx += 8;
   }
-  // -99_999 .. 0
-  for (u32 i = 900001; i < 1000000; ++i) {
-    if (!TABLE[i]) { continue; }
-
+  // -99_999 .. -9_999
+  ITER(900001, 990001) {
     const u32 num = 1000000 - i;
-    const u8 offset = itoa(buffer, num);
-    const u8 len = 8 - offset;
 
-    OUTPUT_BUFFER[idx] = '-';
-    idx += 1;
-    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
-    idx += len;
-    OUTPUT_BUFFER[idx] = '\n';
-    idx += 1;
+    ASSIGN(0, '-');
+    ASSIGN(1, num / 10000 + '0');
+    MEMCPY(2, (num / 100) % 100);
+    MEMCPY(4, num % 100);
+    ASSIGN(6, '\n');
+    idx += 7;
   }
-  // 0 .. 100_000
-  for (u32 i = 1000000; i < 1100000; ++i) {
-    if (!TABLE[i]) { continue; }
+  // -9_999 .. -999
+  ITER(990001, 999001) {
+    const u32 num = 1000000 - i;
 
+    ASSIGN(0, '-');
+    MEMCPY(1, num / 100);
+    MEMCPY(3, num % 100);
+    ASSIGN(5, '\n');
+    idx += 6;
+  }
+  // -999 .. -99
+  ITER(999001, 999901) {
+    const u32 num = 1000000 - i;
+
+    ASSIGN(0, '-');
+    ASSIGN(1, num / 100 + '0');
+    MEMCPY(2, num % 100);
+    ASSIGN(4, '\n');
+    idx += 5;
+  }
+  // -99 .. -9
+  ITER(999901, 999991) {
+    const u32 num = 1000000 - i;
+
+    ASSIGN(0, '-');
+    MEMCPY(1, num);
+    ASSIGN(3, '\n');
+    idx += 4;
+  }
+  // -9 .. 0
+  ITER(999991, 1000000) {
+    const u32 num = 1000000 - i;
+
+    ASSIGN(0, '-');
+    ASSIGN(1, num + '0');
+    ASSIGN(2, '\n');
+    idx += 3;
+  }
+  // 0 .. 10
+  ITER(1000000, 1000010) {
     const u32 num = i - 1000000;
-    const u8 offset = itoa(buffer, num);
-    const u8 len = 8 - offset;
 
-    memcpy(&OUTPUT_BUFFER[idx], &buffer[offset], len);
-    idx += len;
-    OUTPUT_BUFFER[idx] = '\n';
-    idx += 1;
+    ASSIGN(0, num + '0');
+    ASSIGN(1, '\n');
+    idx += 2;
+  }
+  // 10 .. 100
+  ITER(1000010, 1000100) {
+    const u32 num = i - 1000000;
+
+    MEMCPY(0, num);
+    ASSIGN(2, '\n');
+    idx += 3;
+  }
+  // 100 .. 1_000
+  ITER(1000100, 1001000) {
+    const u32 num = i - 1000000;
+
+    ASSIGN(0, num / 100 + '0');
+    MEMCPY(1, num % 100);
+    ASSIGN(3, '\n');
+    idx += 4;
+  }
+  // 1_000 .. 10_000
+  ITER(1001000, 1010000) {
+    const u32 num = i - 1000000;
+
+    MEMCPY(0, num / 100);
+    MEMCPY(2, num % 100);
+    ASSIGN(4, '\n');
+    idx += 5;
+  }
+  // 10_000 .. 100_000
+  ITER(1010000, 1100000) {
+    const u32 num = i - 1000000;
+
+    ASSIGN(0, num / 10000 + '0');
+    MEMCPY(1, (num / 100) % 100);
+    MEMCPY(3, num % 100);
+    ASSIGN(5, '\n');
+    idx += 6;
   }
   // 100_000 .. 1_000_000
-  for (u32 i = 1100000; i < 2000000; ++i) {
-    if (!TABLE[i]) { continue; }
-
+  ITER(1100000, 2000000) {
     const u32 num = i - 1000000;
 
-    memcpy(&OUTPUT_BUFFER[idx + 0], &ITOA_LUT[(num / 10000)*2], 2);
-    memcpy(&OUTPUT_BUFFER[idx + 2], &ITOA_LUT[((num / 100) % 100)*2], 2);
-    memcpy(&OUTPUT_BUFFER[idx + 4], &ITOA_LUT[(num % 100)*2], 2);
-    OUTPUT_BUFFER[idx + 6] = '\n';
+    MEMCPY(0, num / 10000);
+    MEMCPY(2, (num / 100) % 100);
+    MEMCPY(4, num % 100);
+    ASSIGN(6, '\n');
     idx += 7;
   }
   // 1_000_000
@@ -172,6 +216,9 @@ int main() {
     // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
     idx += 7;
   }
+#undef ITER
+#undef ASSIGN
+#undef MEMCPY
 
   //
   // 출력

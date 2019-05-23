@@ -100,10 +100,14 @@ int main() {
   ITER(1, 900001) {
     const u32 num = 1000000 - i;
 
+    const u32 a = num / 10000;
+    const u32 b = (num / 100) % 100;
+    const u32 c = num % 100;
+
     ASSIGN(0, '-');
-    MEMCPY(1, num / 10000);
-    MEMCPY(3, (num / 100) % 100);
-    MEMCPY(5, num % 100);
+    MEMCPY(1, a);
+    MEMCPY(3, b);
+    MEMCPY(5, c);
     ASSIGN(7, '\n');
     idx += 8;
   }
@@ -111,10 +115,14 @@ int main() {
   ITER(900001, 990001) {
     const u32 num = 1000000 - i;
 
+    const u32 a = num / 10000 + '0';
+    const u32 b = (num / 100) % 100;
+    const u32 c = num % 100;
+
     ASSIGN(0, '-');
-    ASSIGN(1, num / 10000 + '0');
-    MEMCPY(2, (num / 100) % 100);
-    MEMCPY(4, num % 100);
+    ASSIGN(1, a);
+    MEMCPY(2, b);
+    MEMCPY(4, c);
     ASSIGN(6, '\n');
     idx += 7;
   }
@@ -122,9 +130,12 @@ int main() {
   ITER(990001, 999001) {
     const u32 num = 1000000 - i;
 
+    const u32 a = num / 100;
+    const u32 b = num % 100;
+
     ASSIGN(0, '-');
-    MEMCPY(1, num / 100);
-    MEMCPY(3, num % 100);
+    MEMCPY(1, a);
+    MEMCPY(3, b);
     ASSIGN(5, '\n');
     idx += 6;
   }
@@ -132,9 +143,12 @@ int main() {
   ITER(999001, 999901) {
     const u32 num = 1000000 - i;
 
+    const u32 a = num / 100 + '0';
+    const u32 b = num % 100;
+
     ASSIGN(0, '-');
-    ASSIGN(1, num / 100 + '0');
-    MEMCPY(2, num % 100);
+    ASSIGN(1, a);
+    MEMCPY(2, b);
     ASSIGN(4, '\n');
     idx += 5;
   }
@@ -176,8 +190,11 @@ int main() {
   ITER(1000100, 1001000) {
     const u32 num = i - 1000000;
 
-    ASSIGN(0, num / 100 + '0');
-    MEMCPY(1, num % 100);
+    const u32 a = num / 100 + '0';
+    const u32 b = num % 100;
+
+    ASSIGN(0, a);
+    MEMCPY(1, b);
     ASSIGN(3, '\n');
     idx += 4;
   }
@@ -185,8 +202,11 @@ int main() {
   ITER(1001000, 1010000) {
     const u32 num = i - 1000000;
 
-    MEMCPY(0, num / 100);
-    MEMCPY(2, num % 100);
+    const u32 a = num / 100;
+    const u32 b = num % 100;
+
+    MEMCPY(0, a);
+    MEMCPY(2, b);
     ASSIGN(4, '\n');
     idx += 5;
   }
@@ -194,9 +214,13 @@ int main() {
   ITER(1010000, 1100000) {
     const u32 num = i - 1000000;
 
-    ASSIGN(0, num / 10000 + '0');
-    MEMCPY(1, (num / 100) % 100);
-    MEMCPY(3, num % 100);
+    const u32 a = num / 10000 + '0';
+    const u32 b = (num / 100) % 100;
+    const u32 c = num % 100;
+
+    ASSIGN(0, a);
+    MEMCPY(1, b);
+    MEMCPY(3, c);
     ASSIGN(5, '\n');
     idx += 6;
   }
@@ -204,9 +228,13 @@ int main() {
   ITER(1100000, 2000000) {
     const u32 num = i - 1000000;
 
-    MEMCPY(0, num / 10000);
-    MEMCPY(2, (num / 100) % 100);
-    MEMCPY(4, num % 100);
+    const u32 a = num / 10000;
+    const u32 b = (num / 100) % 100;
+    const u32 c = num % 100;
+
+    MEMCPY(0, a);
+    MEMCPY(2, b);
+    MEMCPY(4, c);
     ASSIGN(6, '\n');
     idx += 7;
   }

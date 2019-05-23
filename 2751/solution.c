@@ -45,6 +45,13 @@ static i32 parse(const u8 *addr, off_t len, off_t *index) {
   return is_plus ? number : -number;
 }
 
+static const char ITOA_LUT[] =
+  "0001020304050607080910111213141516171819"
+  "2021222324252627282930313233343536373839"
+  "4041424344454647484950515253545556575859"
+  "6061626364656667686970717273747576777879"
+  "8081828384858687888990919293949596979899";
+
 static bool TABLE[2000001];
 
 // /dev/stdin 에 쓰면 불필요하게 IO로 시간 쓸까봐 .bss 에 메모리 만듬
@@ -81,8 +88,8 @@ int main() {
   //
   u32 idx = 0;
 #define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE[i])
-#define ASSIGN_C(DST, CHAR) do { OUTPUT_BUFFER[idx + DST] = (CHAR); } while(0)
-#define ASSIGN_I(DST, NUM) do { OUTPUT_BUFFER[idx + DST] = (NUM) + '0'; } while(0)
+#define ASSIGN(DST, LITERAL) do { OUTPUT_BUFFER[idx + DST] = (LITERAL); } while(0)
+#define MEMCPY(DST, SRC) do { memcpy(&OUTPUT_BUFFER[idx + DST], &ITOA_LUT[(SRC)*2], 2); } while(0)
 
   // -1_000_000
   if (TABLE[0]) {
@@ -93,132 +100,114 @@ int main() {
   ITER(1, 900001) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num / 100000);
-    ASSIGN_I(2, (num / 10000) % 10);
-    ASSIGN_I(3, (num / 1000) % 10);
-    ASSIGN_I(4, (num / 100) % 10);
-    ASSIGN_I(5, (num / 10) % 10);
-    ASSIGN_I(6, num % 10);
-    ASSIGN_C(7, '\n');
+    ASSIGN(0, '-');
+    MEMCPY(1, num / 10000);
+    MEMCPY(3, (num / 100) % 100);
+    MEMCPY(5, num % 100);
+    ASSIGN(7, '\n');
     idx += 8;
   }
   // -99_999 .. -9_999
   ITER(900001, 990001) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num / 10000);
-    ASSIGN_I(2, (num / 1000) % 10);
-    ASSIGN_I(3, (num / 100) % 10);
-    ASSIGN_I(4, (num / 10) % 10);
-    ASSIGN_I(5, num % 10);
-    ASSIGN_C(6, '\n');
+    ASSIGN(0, '-');
+    ASSIGN(1, num / 10000 + '0');
+    MEMCPY(2, (num / 100) % 100);
+    MEMCPY(4, num % 100);
+    ASSIGN(6, '\n');
     idx += 7;
   }
   // -9_999 .. -999
   ITER(990001, 999001) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num / 1000);
-    ASSIGN_I(2, (num / 100) % 10);
-    ASSIGN_I(3, (num / 10) % 10);
-    ASSIGN_I(4, num % 10);
-    ASSIGN_C(5, '\n');
+    ASSIGN(0, '-');
+    MEMCPY(1, num / 100);
+    MEMCPY(3, num % 100);
+    ASSIGN(5, '\n');
     idx += 6;
   }
   // -999 .. -99
   ITER(999001, 999901) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num / 100);
-    ASSIGN_I(2, (num / 10) % 10);
-    ASSIGN_I(3, num % 10);
-    ASSIGN_C(4, '\n');
+    ASSIGN(0, '-');
+    ASSIGN(1, num / 100 + '0');
+    MEMCPY(2, num % 100);
+    ASSIGN(4, '\n');
     idx += 5;
   }
   // -99 .. -9
   ITER(999901, 999991) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num / 10);
-    ASSIGN_I(2, num % 10);
-    ASSIGN_C(3, '\n');
+    ASSIGN(0, '-');
+    MEMCPY(1, num);
+    ASSIGN(3, '\n');
     idx += 4;
   }
   // -9 .. 0
   ITER(999991, 1000000) {
     const u32 num = 1000000 - i;
 
-    ASSIGN_C(0, '-');
-    ASSIGN_I(1, num);
-    ASSIGN_C(2, '\n');
+    ASSIGN(0, '-');
+    ASSIGN(1, num + '0');
+    ASSIGN(2, '\n');
     idx += 3;
   }
   // 0 .. 10
   ITER(1000000, 1000010) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num);
-    ASSIGN_C(1, '\n');
+    ASSIGN(0, num + '0');
+    ASSIGN(1, '\n');
     idx += 2;
   }
   // 10 .. 100
   ITER(1000010, 1000100) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num / 10);
-    ASSIGN_I(1, num % 10);
-    ASSIGN_C(2, '\n');
+    MEMCPY(0, num);
+    ASSIGN(2, '\n');
     idx += 3;
   }
   // 100 .. 1_000
   ITER(1000100, 1001000) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num / 100);
-    ASSIGN_I(1, (num / 10) % 10);
-    ASSIGN_I(2, num % 10);
-    ASSIGN_C(3, '\n');
+    ASSIGN(0, num / 100 + '0');
+    MEMCPY(1, num % 100);
+    ASSIGN(3, '\n');
     idx += 4;
   }
   // 1_000 .. 10_000
   ITER(1001000, 1010000) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num / 1000);
-    ASSIGN_I(1, (num / 100) % 10);
-    ASSIGN_I(2, (num / 10) % 10);
-    ASSIGN_I(3, num % 10);
-    ASSIGN_C(4, '\n');
+    MEMCPY(0, num / 100);
+    MEMCPY(2, num % 100);
+    ASSIGN(4, '\n');
     idx += 5;
   }
   // 10_000 .. 100_000
   ITER(1010000, 1100000) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num / 10000);
-    ASSIGN_I(1, (num / 1000) % 10);
-    ASSIGN_I(2, (num / 100) % 10);
-    ASSIGN_I(3, (num / 10) % 10);
-    ASSIGN_I(4, num % 10);
-    ASSIGN_C(5, '\n');
+    ASSIGN(0, num / 10000 + '0');
+    MEMCPY(1, (num / 100) % 100);
+    MEMCPY(3, num % 100);
+    ASSIGN(5, '\n');
     idx += 6;
   }
   // 100_000 .. 1_000_000
   ITER(1100000, 2000000) {
     const u32 num = i - 1000000;
 
-    ASSIGN_I(0, num / 100000);
-    ASSIGN_I(1, (num / 10000) % 10);
-    ASSIGN_I(2, (num / 1000) % 10);
-    ASSIGN_I(3, (num / 100) % 10);
-    ASSIGN_I(4, (num / 10) % 10);
-    ASSIGN_I(5, num % 10);
-    ASSIGN_C(6, '\n');
+    MEMCPY(0, num / 10000);
+    MEMCPY(2, (num / 100) % 100);
+    MEMCPY(4, num % 100);
+    ASSIGN(6, '\n');
     idx += 7;
   }
   // 1_000_000
@@ -228,8 +217,8 @@ int main() {
     idx += 7;
   }
 #undef ITER
-#undef ASSIGN_C
-#undef ASSIGN_I
+#undef ASSIGN
+#undef MEMCPY
 
   //
   // 출력

@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+typedef int8_t i8;
 typedef int32_t i32;
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -26,18 +27,17 @@ static i32 parse(const u8 *addr, off_t len, off_t *index) {
   bool is_plus = true;
   i32 number = 0;
 
-  // NOTE: 입력이 스펙대로만 들어온다면 self.addr[self.index]에 접근하기 전에
-  // 바운더리 체크를 먼저 할 필요가 없음
-
+  // NOTE: 올바른 입력만 들어온다면, addr[index]에 접근할때 바운더리 체크가 필요 없음
   if (addr[*index] == '-') {
     is_plus = false;
     *index += 1;
   }
 
   while (*index < len) {
-    const u8 ch = addr[*index];
-    if (ch < '0' || '9' < ch) { break; }
-    number = 10*number + ch - '0';
+    const i8 ch = addr[*index] - '0';
+    // NOTE: 올바른 입력만 들어온다면, '0'보다 작은 글자는 무조건 '\n'이다
+    if (ch < 0) { break; }
+    number = 10*number + ch;
     *index += 1;
   }
 

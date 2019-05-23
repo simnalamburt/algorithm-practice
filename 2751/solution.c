@@ -52,7 +52,9 @@ static const char ITOA_LUT[] =
   "6061626364656667686970717273747576777879"
   "8081828384858687888990919293949596979899";
 
-static bool TABLE[2000001];
+static u8 BITSET[250001];
+#define TABLE(IDX) (BITSET[(IDX) >> 3] >> (IDX & 7) & 1)
+#define SET_TABLE(IDX) do { BITSET[(IDX) >> 3] |= 1<<(IDX & 7); } while(0)
 
 // /dev/stdin 에 쓰면 불필요하게 IO로 시간 쓸까봐 .bss 에 메모리 만듬
 static u8 OUTPUT_BUFFER[7888904];
@@ -80,19 +82,19 @@ int main() {
   for (i32 i = 0; i < count; ++i) {
     const i32 num = parse(input, file_size, &index);
     // -1_000_000 <= num <= 1_000_000
-    TABLE[num + 1000000] = 1;
+    SET_TABLE(num + 1000000);
   }
 
   //
   // 출력할 내용을 OUTPUT_BUFFER에 기록
   //
   u32 idx = 0;
-#define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE[i])
+#define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE(i))
 #define ASSIGN(DST, LITERAL) do { OUTPUT_BUFFER[idx + DST] = (LITERAL); } while(0)
 #define MEMCPY(DST, SRC) do { memcpy(&OUTPUT_BUFFER[idx + DST], &ITOA_LUT[(SRC)*2], 2); } while(0)
 
   // -1_000_000
-  if (TABLE[0]) {
+  if (TABLE(0)) {
     memcpy(&OUTPUT_BUFFER[0], "-1000000\n", 9);
     idx += 9;
   }
@@ -211,7 +213,7 @@ int main() {
     idx += 7;
   }
   // 1_000_000
-  if (TABLE[2000000]) {
+  if (TABLE(2000000)) {
     memcpy(&OUTPUT_BUFFER[idx], "1000000", 7);
     // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
     idx += 7;

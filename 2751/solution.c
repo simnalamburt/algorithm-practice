@@ -1,4 +1,4 @@
-// clang -O3 solution.c -Wall -Wextra -Wpedantic -Werror -std=c17
+// clang -O2 solution.c -lm -static -Wall -Wextra -Wpedantic -Werror -std=c11
 //
 // Reference:
 //   https://www.acmicpc.net/problem/2751
@@ -23,7 +23,7 @@ typedef uint32_t u32;
 
 // 틀린 입력이 절대 들어오지 않고 입력이 스펙대로만 들어온다고 가정하면 더 빠른
 // atoi를 만들 수 있다.
-static i32 parse(const u8 *addr, off_t len, off_t *index) {
+static inline i32 parse(const u8 *addr, off_t len, off_t *index) {
   bool is_plus = true;
   i32 number = 0;
 
@@ -101,6 +101,7 @@ int main() {
   // -999_999 .. -99_999
   for (i8 a = 99; a >= 10; --a) {
     for (i8 b = 99; b >= 0; --b) {
+#pragma unroll 16
       for (i8 c = 99; c >= 0; --c) {
         if (!TABLE[i++]) { continue; }
         ASSIGN(0, '-');
@@ -116,6 +117,7 @@ int main() {
   // -99_999 .. -9_999
   for (i8 a = '9'; a >= '1'; --a) {
     for (i8 b = 99; b >= 0; --b) {
+#pragma unroll 16
       for (i8 c = 99; c >= 0; --c) {
         if (!TABLE[i++]) { continue; }
         ASSIGN(0, '-');
@@ -129,6 +131,7 @@ int main() {
   }
 
   for (i8 b = 99; b >= 10; --b) {
+#pragma unroll 16
     for (i8 c = 99; c >= 0; --c) {
       if (!TABLE[i++]) { continue; }
       ASSIGN(0, '-');
@@ -141,6 +144,7 @@ int main() {
 
   // -999 .. -99
   for (i8 b = '9'; b >= '1'; --b) {
+#pragma unroll 16
     for (i8 c = 99; c >= 0; --c) {
       if (!TABLE[i++]) { continue; }
       ASSIGN(0, '-');
@@ -152,6 +156,7 @@ int main() {
   }
 
   // -99 .. -9
+#pragma unroll 16
   for (i8 c = 99; c >= 10; --c) {
     if (!TABLE[i++]) { continue; }
     ASSIGN(0, '-');
@@ -160,6 +165,8 @@ int main() {
     idx += 4;
   }
 
+  // -9 .. 0
+#pragma unroll 16
   for (i8 c = '9'; c >= '1'; --c) {
     if (!TABLE[i++]) { continue; }
     ASSIGN(0, '-');
@@ -169,6 +176,7 @@ int main() {
   }
 
   // 0 .. 10
+#pragma unroll 16
   for (i8 c = '0'; c <= '9'; ++c) {
     if (!TABLE[i++]) { continue; }
     ASSIGN(0, c);
@@ -177,6 +185,7 @@ int main() {
   }
 
   // 10 .. 100
+#pragma unroll 16
   for (i8 c = 10; c < 100; ++c) {
     if (!TABLE[i++]) { continue; }
     MEMCPY(0, c);
@@ -186,6 +195,7 @@ int main() {
 
   // 100 .. 1_000
   for (i8 b = '1'; b <= '9'; ++b) {
+#pragma unroll 16
     for (i8 c = 0; c < 100; ++c) {
       if (!TABLE[i++]) { continue; }
       ASSIGN(0, b);
@@ -197,6 +207,7 @@ int main() {
 
   // 1_000 .. 10_000
   for (i8 b = 10; b < 100; ++b) {
+#pragma unroll 16
     for (i8 c = 0; c < 100; ++c) {
       if (!TABLE[i++]) { continue; }
       MEMCPY(0, b);
@@ -209,6 +220,7 @@ int main() {
   // 10_000 .. 100_000
   for (i8 a = '1'; a <= '9'; ++a) {
     for (i8 b = 0; b < 100; ++b) {
+#pragma unroll 16
       for (i8 c = 0; c < 100; ++c) {
         if (!TABLE[i++]) { continue; }
         ASSIGN(0, a);
@@ -223,6 +235,7 @@ int main() {
   // 100_000 .. 1_000_000
   for (i8 a = 10; a < 100; ++a) {
     for (i8 b = 0; b < 100; ++b) {
+#pragma unroll 16
       for (i8 c = 0; c < 100; ++c) {
         if (!TABLE[i++]) { continue; }
         MEMCPY(0, a);

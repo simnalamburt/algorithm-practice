@@ -99,212 +99,140 @@ int main() {
   }
 
   // -999_999 .. -99_999
-  for (i8 a = 99; a >= 0; --a) {
+  for (i8 a = 99; a >= 10; --a) {
     for (i8 b = 99; b >= 0; --b) {
       for (i8 c = 99; c >= 0; --c) {
-        if (i >= 1000000 - 99999) {
-          goto MINUS_6DIGITS_BREAK;
-        }
-        if (TABLE[i]) {
-          ASSIGN(0, '-');
-          MEMCPY(1, a);
-          MEMCPY(3, b);
-          MEMCPY(5, c);
-          ASSIGN(7, '\n');
-          idx += 8;
-        }
-        i += 1;
+        if (!TABLE[i++]) { continue; }
+        ASSIGN(0, '-');
+        MEMCPY(1, a);
+        MEMCPY(3, b);
+        MEMCPY(5, c);
+        ASSIGN(7, '\n');
+        idx += 8;
       }
     }
   }
-MINUS_6DIGITS_BREAK:
 
   // -99_999 .. -9_999
-  for (i8 a = '9'; a >= '0'; --a) {
+  for (i8 a = '9'; a >= '1'; --a) {
     for (i8 b = 99; b >= 0; --b) {
       for (i8 c = 99; c >= 0; --c) {
-        if (i >= 1000000 - 9999) {
-          goto MINUS_5DIGITS_BREAK;
-        }
-        if (TABLE[i]) {
-          ASSIGN(0, '-');
-          ASSIGN(1, a);
-          MEMCPY(2, b);
-          MEMCPY(4, c);
-          ASSIGN(6, '\n');
-          idx += 7;
-        }
-        i += 1;
-      }
-    }
-  }
-MINUS_5DIGITS_BREAK:
-
-  for (i8 b = 99; b >= 0; --b) {
-    for (i8 c = 99; c >= 0; --c) {
-      if (i >= 1000000 - 999) {
-        goto MINUS_4DIGITS_BREAK;
-      }
-      if (TABLE[i]) {
+        if (!TABLE[i++]) { continue; }
         ASSIGN(0, '-');
-        MEMCPY(1, b);
-        MEMCPY(3, c);
-        ASSIGN(5, '\n');
-        idx += 6;
+        ASSIGN(1, a);
+        MEMCPY(2, b);
+        MEMCPY(4, c);
+        ASSIGN(6, '\n');
+        idx += 7;
       }
-      i += 1;
     }
   }
-MINUS_4DIGITS_BREAK:
+
+  for (i8 b = 99; b >= 10; --b) {
+    for (i8 c = 99; c >= 0; --c) {
+      if (!TABLE[i++]) { continue; }
+      ASSIGN(0, '-');
+      MEMCPY(1, b);
+      MEMCPY(3, c);
+      ASSIGN(5, '\n');
+      idx += 6;
+    }
+  }
 
   // -999 .. -99
-  for (i8 b = '9'; b >= '0'; --b) {
+  for (i8 b = '9'; b >= '1'; --b) {
     for (i8 c = 99; c >= 0; --c) {
-      if (i >= 1000000 - 99) {
-        goto MINUS_3DIGITS_BREAK;
-      }
-      if (TABLE[i]) {
-        ASSIGN(0, '-');
-        ASSIGN(1, b);
-        MEMCPY(2, c);
-        ASSIGN(4, '\n');
-        idx += 5;
-      }
-      i += 1;
+      if (!TABLE[i++]) { continue; }
+      ASSIGN(0, '-');
+      ASSIGN(1, b);
+      MEMCPY(2, c);
+      ASSIGN(4, '\n');
+      idx += 5;
     }
   }
-MINUS_3DIGITS_BREAK:
 
   // -99 .. -9
-  for (i8 c = 99; c >= 0; --c) {
-    if (i >= 1000000 - 9) {
-      goto MINUS_2DIGITS_BREAK;
-    }
-    if (TABLE[i]) {
-      ASSIGN(0, '-');
-      MEMCPY(1, c);
-      ASSIGN(3, '\n');
-      idx += 4;
-    }
-    i += 1;
+  for (i8 c = 99; c >= 10; --c) {
+    if (!TABLE[i++]) { continue; }
+    ASSIGN(0, '-');
+    MEMCPY(1, c);
+    ASSIGN(3, '\n');
+    idx += 4;
   }
-MINUS_2DIGITS_BREAK:
 
-  for (i8 c = '9'; c >= '0'; --c) {
-    if (i >= 1000000) {
-      goto MINUS_1DIGITS_BREAK;
-    }
-    if (TABLE[i]) {
-      ASSIGN(0, '-');
-      ASSIGN(1, c);
-      ASSIGN(2, '\n');
-      idx += 3;
-    }
-    i += 1;
+  for (i8 c = '9'; c >= '1'; --c) {
+    if (!TABLE[i++]) { continue; }
+    ASSIGN(0, '-');
+    ASSIGN(1, c);
+    ASSIGN(2, '\n');
+    idx += 3;
   }
-MINUS_1DIGITS_BREAK:
 
   // 0 .. 10
   for (i8 c = '0'; c <= '9'; ++c) {
-    if (i >= 1000000 + 10) {
-      goto PLUS_1DIGITS_BREAK;
-    }
-    if (TABLE[i]) {
-      ASSIGN(0, c);
-      ASSIGN(1, '\n');
-      idx += 2;
-    }
-    i += 1;
+    if (!TABLE[i++]) { continue; }
+    ASSIGN(0, c);
+    ASSIGN(1, '\n');
+    idx += 2;
   }
-PLUS_1DIGITS_BREAK:
 
   // 10 .. 100
   for (i8 c = 10; c < 100; ++c) {
-    if (i >= 1000000 + 100) {
-      goto PLUS_2DIGITS_BREAK;
-    }
-    if (TABLE[i]) {
-      MEMCPY(0, c);
-      ASSIGN(2, '\n');
-      idx += 3;
-    }
-    i += 1;
+    if (!TABLE[i++]) { continue; }
+    MEMCPY(0, c);
+    ASSIGN(2, '\n');
+    idx += 3;
   }
-PLUS_2DIGITS_BREAK:
 
   // 100 .. 1_000
   for (i8 b = '1'; b <= '9'; ++b) {
     for (i8 c = 0; c < 100; ++c) {
-      if (i >= 1000000 + 1000) {
-        goto PLUS_3DIGITS_BREAK;
-      }
-      if (TABLE[i]) {
-        ASSIGN(0, b);
-        MEMCPY(1, c);
-        ASSIGN(3, '\n');
-        idx += 4;
-      }
-      i += 1;
+      if (!TABLE[i++]) { continue; }
+      ASSIGN(0, b);
+      MEMCPY(1, c);
+      ASSIGN(3, '\n');
+      idx += 4;
     }
   }
-PLUS_3DIGITS_BREAK:
 
   // 1_000 .. 10_000
   for (i8 b = 10; b < 100; ++b) {
     for (i8 c = 0; c < 100; ++c) {
-      if (i >= 1000000 + 10000) {
-        goto PLUS_4DIGITS_BREAK;
-      }
-      if (TABLE[i]) {
-        MEMCPY(0, b);
-        MEMCPY(2, c);
-        ASSIGN(4, '\n');
-        idx += 5;
-      }
-      i += 1;
+      if (!TABLE[i++]) { continue; }
+      MEMCPY(0, b);
+      MEMCPY(2, c);
+      ASSIGN(4, '\n');
+      idx += 5;
     }
   }
-PLUS_4DIGITS_BREAK:
 
   // 10_000 .. 100_000
   for (i8 a = '1'; a <= '9'; ++a) {
     for (i8 b = 0; b < 100; ++b) {
       for (i8 c = 0; c < 100; ++c) {
-        if (i >= 1000000 + 100000) {
-          goto PLUS_5DIGITS_BREAK;
-        }
-        if (TABLE[i]) {
-          ASSIGN(0, a);
-          MEMCPY(1, b);
-          MEMCPY(3, c);
-          ASSIGN(5, '\n');
-          idx += 6;
-        }
-        i += 1;
+        if (!TABLE[i++]) { continue; }
+        ASSIGN(0, a);
+        MEMCPY(1, b);
+        MEMCPY(3, c);
+        ASSIGN(5, '\n');
+        idx += 6;
       }
     }
   }
-PLUS_5DIGITS_BREAK:
 
   // 100_000 .. 1_000_000
   for (i8 a = 10; a < 100; ++a) {
     for (i8 b = 0; b < 100; ++b) {
       for (i8 c = 0; c < 100; ++c) {
-        if (i >= 1000000 + 1000000) {
-          goto PLUS_6DIGITS_BREAK;
-        }
-        if (TABLE[i]) {
-          MEMCPY(0, a);
-          MEMCPY(2, b);
-          MEMCPY(4, c);
-          ASSIGN(6, '\n');
-          idx += 7;
-        }
-        i += 1;
+        if (!TABLE[i++]) { continue; }
+        MEMCPY(0, a);
+        MEMCPY(2, b);
+        MEMCPY(4, c);
+        ASSIGN(6, '\n');
+        idx += 7;
       }
     }
   }
-PLUS_6DIGITS_BREAK:
 
   // 1_000_000
   if (TABLE[2000000]) {

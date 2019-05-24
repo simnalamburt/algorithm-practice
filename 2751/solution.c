@@ -87,6 +87,7 @@ int main() {
   // 출력할 내용을 OUTPUT_BUFFER에 기록
   //
   u32 idx = 0;
+  u32 i = 1;
 #define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE[i])
 #define ASSIGN(DST, LITERAL) do { OUTPUT_BUFFER[idx + DST] = (LITERAL); } while(0)
 #define MEMCPY(DST, SRC) do { memcpy(&OUTPUT_BUFFER[idx + DST], &ITOA_LUT[(SRC)*2], 2); } while(0)
@@ -96,148 +97,215 @@ int main() {
     memcpy(&OUTPUT_BUFFER[0], "-1000000\n", 9);
     idx += 9;
   }
+
   // -999_999 .. -99_999
-  ITER(1, 900001) {
-    const u32 num = 1000000 - i;
-
-    const u32 a = num / 10000;
-    const u32 b = (num / 100) % 100;
-    const u32 c = num % 100;
-
-    ASSIGN(0, '-');
-    MEMCPY(1, a);
-    MEMCPY(3, b);
-    MEMCPY(5, c);
-    ASSIGN(7, '\n');
-    idx += 8;
+  for (i8 a = 99; a >= 0; --a) {
+    for (i8 b = 99; b >= 0; --b) {
+      for (i8 c = 99; c >= 0; --c) {
+        if (i >= 1000000 - 99999) {
+          goto MINUS_6DIGITS_BREAK;
+        }
+        if (TABLE[i]) {
+          ASSIGN(0, '-');
+          MEMCPY(1, a);
+          MEMCPY(3, b);
+          MEMCPY(5, c);
+          ASSIGN(7, '\n');
+          idx += 8;
+        }
+        i += 1;
+      }
+    }
   }
+MINUS_6DIGITS_BREAK:
+
   // -99_999 .. -9_999
-  ITER(900001, 990001) {
-    const u32 num = 1000000 - i;
-
-    const u32 a = num / 10000 + '0';
-    const u32 b = (num / 100) % 100;
-    const u32 c = num % 100;
-
-    ASSIGN(0, '-');
-    ASSIGN(1, a);
-    MEMCPY(2, b);
-    MEMCPY(4, c);
-    ASSIGN(6, '\n');
-    idx += 7;
+  for (i8 a = '9'; a >= '0'; --a) {
+    for (i8 b = 99; b >= 0; --b) {
+      for (i8 c = 99; c >= 0; --c) {
+        if (i >= 1000000 - 9999) {
+          goto MINUS_5DIGITS_BREAK;
+        }
+        if (TABLE[i]) {
+          ASSIGN(0, '-');
+          ASSIGN(1, a);
+          MEMCPY(2, b);
+          MEMCPY(4, c);
+          ASSIGN(6, '\n');
+          idx += 7;
+        }
+        i += 1;
+      }
+    }
   }
-  // -9_999 .. -999
-  ITER(990001, 999001) {
-    const u32 num = 1000000 - i;
+MINUS_5DIGITS_BREAK:
 
-    const u32 a = num / 100;
-    const u32 b = num % 100;
-
-    ASSIGN(0, '-');
-    MEMCPY(1, a);
-    MEMCPY(3, b);
-    ASSIGN(5, '\n');
-    idx += 6;
+  for (i8 b = 99; b >= 0; --b) {
+    for (i8 c = 99; c >= 0; --c) {
+      if (i >= 1000000 - 999) {
+        goto MINUS_4DIGITS_BREAK;
+      }
+      if (TABLE[i]) {
+        ASSIGN(0, '-');
+        MEMCPY(1, b);
+        MEMCPY(3, c);
+        ASSIGN(5, '\n');
+        idx += 6;
+      }
+      i += 1;
+    }
   }
+MINUS_4DIGITS_BREAK:
+
   // -999 .. -99
-  ITER(999001, 999901) {
-    const u32 num = 1000000 - i;
-
-    const u32 a = num / 100 + '0';
-    const u32 b = num % 100;
-
-    ASSIGN(0, '-');
-    ASSIGN(1, a);
-    MEMCPY(2, b);
-    ASSIGN(4, '\n');
-    idx += 5;
+  for (i8 b = '9'; b >= '0'; --b) {
+    for (i8 c = 99; c >= 0; --c) {
+      if (i >= 1000000 - 99) {
+        goto MINUS_3DIGITS_BREAK;
+      }
+      if (TABLE[i]) {
+        ASSIGN(0, '-');
+        ASSIGN(1, b);
+        MEMCPY(2, c);
+        ASSIGN(4, '\n');
+        idx += 5;
+      }
+      i += 1;
+    }
   }
+MINUS_3DIGITS_BREAK:
+
   // -99 .. -9
-  ITER(999901, 999991) {
-    const u32 num = 1000000 - i;
-
-    ASSIGN(0, '-');
-    MEMCPY(1, num);
-    ASSIGN(3, '\n');
-    idx += 4;
+  for (i8 c = 99; c >= 0; --c) {
+    if (i >= 1000000 - 9) {
+      goto MINUS_2DIGITS_BREAK;
+    }
+    if (TABLE[i]) {
+      ASSIGN(0, '-');
+      MEMCPY(1, c);
+      ASSIGN(3, '\n');
+      idx += 4;
+    }
+    i += 1;
   }
-  // -9 .. 0
-  ITER(999991, 1000000) {
-    const u32 num = 1000000 - i;
+MINUS_2DIGITS_BREAK:
 
-    ASSIGN(0, '-');
-    ASSIGN(1, num + '0');
-    ASSIGN(2, '\n');
-    idx += 3;
+  for (i8 c = '9'; c >= '0'; --c) {
+    if (i >= 1000000) {
+      goto MINUS_1DIGITS_BREAK;
+    }
+    if (TABLE[i]) {
+      ASSIGN(0, '-');
+      ASSIGN(1, c);
+      ASSIGN(2, '\n');
+      idx += 3;
+    }
+    i += 1;
   }
+MINUS_1DIGITS_BREAK:
+
   // 0 .. 10
-  ITER(1000000, 1000010) {
-    const u32 num = i - 1000000;
-
-    ASSIGN(0, num + '0');
-    ASSIGN(1, '\n');
-    idx += 2;
+  for (i8 c = '0'; c <= '9'; ++c) {
+    if (i >= 1000000 + 10) {
+      goto PLUS_1DIGITS_BREAK;
+    }
+    if (TABLE[i]) {
+      ASSIGN(0, c);
+      ASSIGN(1, '\n');
+      idx += 2;
+    }
+    i += 1;
   }
+PLUS_1DIGITS_BREAK:
+
   // 10 .. 100
-  ITER(1000010, 1000100) {
-    const u32 num = i - 1000000;
-
-    MEMCPY(0, num);
-    ASSIGN(2, '\n');
-    idx += 3;
+  for (i8 c = 10; c < 100; ++c) {
+    if (i >= 1000000 + 100) {
+      goto PLUS_2DIGITS_BREAK;
+    }
+    if (TABLE[i]) {
+      MEMCPY(0, c);
+      ASSIGN(2, '\n');
+      idx += 3;
+    }
+    i += 1;
   }
+PLUS_2DIGITS_BREAK:
+
   // 100 .. 1_000
-  ITER(1000100, 1001000) {
-    const u32 num = i - 1000000;
-
-    const u32 a = num / 100 + '0';
-    const u32 b = num % 100;
-
-    ASSIGN(0, a);
-    MEMCPY(1, b);
-    ASSIGN(3, '\n');
-    idx += 4;
+  for (i8 b = '1'; b <= '9'; ++b) {
+    for (i8 c = 0; c < 100; ++c) {
+      if (i >= 1000000 + 1000) {
+        goto PLUS_3DIGITS_BREAK;
+      }
+      if (TABLE[i]) {
+        ASSIGN(0, b);
+        MEMCPY(1, c);
+        ASSIGN(3, '\n');
+        idx += 4;
+      }
+      i += 1;
+    }
   }
+PLUS_3DIGITS_BREAK:
+
   // 1_000 .. 10_000
-  ITER(1001000, 1010000) {
-    const u32 num = i - 1000000;
-
-    const u32 a = num / 100;
-    const u32 b = num % 100;
-
-    MEMCPY(0, a);
-    MEMCPY(2, b);
-    ASSIGN(4, '\n');
-    idx += 5;
+  for (i8 b = 10; b < 100; ++b) {
+    for (i8 c = 0; c < 100; ++c) {
+      if (i >= 1000000 + 10000) {
+        goto PLUS_4DIGITS_BREAK;
+      }
+      if (TABLE[i]) {
+        MEMCPY(0, b);
+        MEMCPY(2, c);
+        ASSIGN(4, '\n');
+        idx += 5;
+      }
+      i += 1;
+    }
   }
+PLUS_4DIGITS_BREAK:
+
   // 10_000 .. 100_000
-  ITER(1010000, 1100000) {
-    const u32 num = i - 1000000;
-
-    const u32 a = num / 10000 + '0';
-    const u32 b = (num / 100) % 100;
-    const u32 c = num % 100;
-
-    ASSIGN(0, a);
-    MEMCPY(1, b);
-    MEMCPY(3, c);
-    ASSIGN(5, '\n');
-    idx += 6;
+  for (i8 a = '1'; a <= '9'; ++a) {
+    for (i8 b = 0; b < 100; ++b) {
+      for (i8 c = 0; c < 100; ++c) {
+        if (i >= 1000000 + 100000) {
+          goto PLUS_5DIGITS_BREAK;
+        }
+        if (TABLE[i]) {
+          ASSIGN(0, a);
+          MEMCPY(1, b);
+          MEMCPY(3, c);
+          ASSIGN(5, '\n');
+          idx += 6;
+        }
+        i += 1;
+      }
+    }
   }
+PLUS_5DIGITS_BREAK:
+
   // 100_000 .. 1_000_000
-  ITER(1100000, 2000000) {
-    const u32 num = i - 1000000;
-
-    const u32 a = num / 10000;
-    const u32 b = (num / 100) % 100;
-    const u32 c = num % 100;
-
-    MEMCPY(0, a);
-    MEMCPY(2, b);
-    MEMCPY(4, c);
-    ASSIGN(6, '\n');
-    idx += 7;
+  for (i8 a = 10; a < 100; ++a) {
+    for (i8 b = 0; b < 100; ++b) {
+      for (i8 c = 0; c < 100; ++c) {
+        if (i >= 1000000 + 1000000) {
+          goto PLUS_6DIGITS_BREAK;
+        }
+        if (TABLE[i]) {
+          MEMCPY(0, a);
+          MEMCPY(2, b);
+          MEMCPY(4, c);
+          ASSIGN(6, '\n');
+          idx += 7;
+        }
+        i += 1;
+      }
+    }
   }
+PLUS_6DIGITS_BREAK:
+
   // 1_000_000
   if (TABLE[2000000]) {
     memcpy(&OUTPUT_BUFFER[idx], "1000000", 7);

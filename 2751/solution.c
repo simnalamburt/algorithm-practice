@@ -23,25 +23,22 @@ typedef uint32_t u32;
 
 // 틀린 입력이 절대 들어오지 않고 입력이 스펙대로만 들어온다고 가정하면 더 빠른
 // atoi를 만들 수 있다.
-static inline i32 parse(const u8 *addr, off_t len, off_t *index) {
-  bool is_plus = true;
-  i32 number = 0;
+static inline i32 parse(const u8 *addr, off_t *p_index) {
+  off_t idx = *p_index;
 
   // NOTE: 올바른 입력만 들어온다면, addr[index]에 접근할때 바운더리 체크가 필요 없음
-  if (addr[*index] == '-') {
-    is_plus = false;
-    *index += 1;
-  }
+  const bool is_plus = addr[idx] != '-';
+  if (!is_plus) { idx += 1; }
 
-  while (*index < len) {
-    const i8 ch = addr[*index] - '0';
+  i32 i = 0, number = 0;
+#pragma unroll 7
+  for (; i < 7; ++i) {
+    const i8 ch = addr[idx + i] - '0';
     // NOTE: 올바른 입력만 들어온다면, '0'보다 작은 글자는 무조건 '\n'이다
     if (ch < 0) { break; }
     number = 10*number + ch;
-    *index += 1;
   }
-
-  *index += 1;
+  *p_index = idx + i + 1;
   return is_plus ? number : -number;
 }
 
@@ -76,9 +73,9 @@ int main() {
   // 오토마타로 stdin 파싱
   //
   off_t index = 0;
-  const i32 count = parse(input, file_size, &index);
+  const i32 count = parse(input, &index);
   for (i32 i = 0; i < count; ++i) {
-    const i32 num = parse(input, file_size, &index);
+    const i32 num = parse(input, &index);
     // -1_000_000 <= num <= 1_000_000
     TABLE[num + 1000000] = 1;
   }

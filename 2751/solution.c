@@ -51,7 +51,9 @@ static const char ITOA_LUT[] =
 
 static bool TABLE[2000001];
 
-// /dev/stdin 에 쓰면 불필요하게 IO로 시간 쓸까봐 .bss 에 메모리 만듬
+// 출력을 큰 메모리영역에 버퍼링한다음, 한번의 write(2) 콜로 출력함
+// 원래는 mmap(/dev/stdin) 에 버퍼링을 했었는데, 거기에 쓰면 불필요하게 IO Queue
+// 생길까봐 .bss에 따로 메모리를 할당하는 구현으로 바꿈
 static u8 OUTPUT_BUFFER[7888904];
 
 int main() {

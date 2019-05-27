@@ -1,9 +1,3 @@
-//! rustfmt solution.rs
-//! rustc solution.rs -O --edition=2018
-//!
-//! Reference:
-//!   https://www.acmicpc.net/problem/2751
-
 use libc::{input, print};
 use parse::parse;
 use std::ptr::copy_nonoverlapping;

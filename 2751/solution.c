@@ -1,7 +1,3 @@
-// clang -O2 solution.c -lm -static -Wall -Wextra -Wpedantic -Werror -std=c11
-//
-// Reference:
-//   https://www.acmicpc.net/problem/2751
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -42,6 +38,9 @@ static inline i32 parse(const u8 *addr, off_t *p_index) {
   return is_plus ? number : -number;
 }
 
+// itoa LUT 알고리즘용 룩업테이블.
+//
+// NOTE: LUT 알고리즘을 mod 100 대신 mod 1000 로 하면 더 빨라질 수 있음
 static const char ITOA_LUT[] =
   "0001020304050607080910111213141516171819"
   "2021222324252627282930313233343536373839"
@@ -49,9 +48,11 @@ static const char ITOA_LUT[] =
   "6061626364656667686970717273747576777879"
   "8081828384858687888990919293949596979899";
 
+// 카운팅 소트용 배열
 static bool TABLE[2000001];
 
-// 출력을 큰 메모리영역에 버퍼링한다음, 한번의 write(2) 콜로 출력함
+// 출력을 큰 메모리영역에 버퍼링한다음, 한번의 write(2) 콜로 출력함.
+//
 // 원래는 mmap(/dev/stdin) 에 버퍼링을 했었는데, 거기에 쓰면 불필요하게 IO Queue
 // 생길까봐 .bss에 따로 메모리를 할당하는 구현으로 바꿈
 static u8 OUTPUT_BUFFER[7888904];
@@ -87,7 +88,6 @@ int main() {
   //
   u32 idx = 0;
   u32 i = 1;
-#define ITER(BEGIN, END) for (u32 i = (BEGIN); i < (END); ++i) if (TABLE[i])
 #define ASSIGN(DST, LITERAL) do { OUTPUT_BUFFER[idx + DST] = (LITERAL); } while(0)
 #define MEMCPY(DST, SRC) do { memcpy(&OUTPUT_BUFFER[idx + DST], &ITOA_LUT[(SRC)*2], 2); } while(0)
 
@@ -97,7 +97,7 @@ int main() {
     idx += 9;
   }
 
-  // -999_999 .. -99_999
+  // [-999_999, -99_999)
   for (i8 a = 99; a >= 10; --a) {
     for (i8 b = 99; b >= 0; --b) {
 #pragma unroll 16
@@ -113,7 +113,7 @@ int main() {
     }
   }
 
-  // -99_999 .. -9_999
+  // [-99_999, -9_999)
   for (i8 a = '9'; a >= '1'; --a) {
     for (i8 b = 99; b >= 0; --b) {
 #pragma unroll 16
@@ -129,6 +129,7 @@ int main() {
     }
   }
 
+  // [-9_999, -999)
   for (i8 b = 99; b >= 10; --b) {
 #pragma unroll 16
     for (i8 c = 99; c >= 0; --c) {
@@ -141,7 +142,7 @@ int main() {
     }
   }
 
-  // -999 .. -99
+  // [-999, -99)
   for (i8 b = '9'; b >= '1'; --b) {
 #pragma unroll 16
     for (i8 c = 99; c >= 0; --c) {
@@ -154,7 +155,7 @@ int main() {
     }
   }
 
-  // -99 .. -9
+  // [-99, -9)
 #pragma unroll 16
   for (i8 c = 99; c >= 10; --c) {
     if (!TABLE[i++]) { continue; }
@@ -164,7 +165,7 @@ int main() {
     idx += 4;
   }
 
-  // -9 .. 0
+  // [-9, 0)
 #pragma unroll 16
   for (i8 c = '9'; c >= '1'; --c) {
     if (!TABLE[i++]) { continue; }
@@ -174,7 +175,7 @@ int main() {
     idx += 3;
   }
 
-  // 0 .. 10
+  // [0, 10)
 #pragma unroll 16
   for (i8 c = '0'; c <= '9'; ++c) {
     if (!TABLE[i++]) { continue; }
@@ -183,7 +184,7 @@ int main() {
     idx += 2;
   }
 
-  // 10 .. 100
+  // [10, 100)
 #pragma unroll 16
   for (i8 c = 10; c < 100; ++c) {
     if (!TABLE[i++]) { continue; }
@@ -192,7 +193,7 @@ int main() {
     idx += 3;
   }
 
-  // 100 .. 1_000
+  // [100, 1_000)
   for (i8 b = '1'; b <= '9'; ++b) {
 #pragma unroll 16
     for (i8 c = 0; c < 100; ++c) {
@@ -204,7 +205,7 @@ int main() {
     }
   }
 
-  // 1_000 .. 10_000
+  // [1_000, 10_000)
   for (i8 b = 10; b < 100; ++b) {
 #pragma unroll 16
     for (i8 c = 0; c < 100; ++c) {
@@ -216,7 +217,7 @@ int main() {
     }
   }
 
-  // 10_000 .. 100_000
+  // [10_000, 100_000)
   for (i8 a = '1'; a <= '9'; ++a) {
     for (i8 b = 0; b < 100; ++b) {
 #pragma unroll 16
@@ -231,7 +232,7 @@ int main() {
     }
   }
 
-  // 100_000 .. 1_000_000
+  // [100_000, 1_000_000)
   for (i8 a = 10; a < 100; ++a) {
     for (i8 b = 0; b < 100; ++b) {
 #pragma unroll 16
@@ -252,7 +253,6 @@ int main() {
     // NOTE: 맨 마지막 줄에 LF 없어도 정답으로 인정됨
     idx += 7;
   }
-#undef ITER
 #undef ASSIGN
 #undef MEMCPY
 

@@ -1,7 +1,3 @@
-// rustfmt solution.rs && rustc solution.rs -O --edition=2018
-//
-// Reference:
-//   https://www.acmicpc.net/problem/2751
 use std::io::prelude::*;
 use std::io::stdin;
 

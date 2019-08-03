@@ -32,7 +32,6 @@ def enumerate_adjacent(position: tuple):
 #
 # Dijkstra
 #
-VISITED = [[False]*WIDTH for _ in range(HEIGHT)]
 COST = [[math.inf]*WIDTH for _ in range(HEIGHT)]
 COST[0][0] = 0
 
@@ -40,8 +39,6 @@ priority_queue = [(0, (0, 0))]
 while priority_queue:
     cost, (x0, y0) = heappop(priority_queue)
     # assert 0 <= x0 < WIDTH and 0 <= y0 < HEIGHT
-    # assert not VISITED[y0][x0]
-    VISITED[y0][x0] = True
 
     # 도착함
     if x0 == DST_X and y0 == DST_Y:
@@ -49,8 +46,6 @@ while priority_queue:
 
     # 인접한 점들 순회
     for x, y in enumerate_adjacent((x0, y0)):
-        if VISITED[y][x]:
-            continue
         new_cost = cost + WORLD[y][x]
         if COST[y][x] > new_cost:
             COST[y][x] = new_cost

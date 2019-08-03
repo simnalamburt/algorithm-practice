@@ -1,54 +1,35 @@
 #!/usr/bin/env python3
-import math
-from re import finditer
 from sys import stdin
 from heapq import heappush, heappop
 
-# 0-based index
-DST_X, DST_Y = tuple(int(v) - 1 for v in input().split())
-
-# `world[y][x]` 이렇게 접근해야함
-WORLD = [
-    [int(tile) for tile in x.group(0)]
-    for x in finditer('[01]+', stdin.read())
-]
-WIDTH = len(WORLD[0])
-HEIGHT = len(WORLD)
-# assert len({len(row) for row in WORLD}) == 1
-
-# 좌표 하나를 입력하면, 거기에 인접한 인근 좌표들을 반환하는 함수
-def enumerate_adjacent(position: tuple):
-    x, y = position
-    # assert 0 <= x < WIDTH and 0 <= y < HEIGHT
-    if y != 0:
-        yield x, y - 1
-    if x != 0:
-        yield x - 1, y
-    if x != WIDTH - 1:
-        yield x + 1, y
-    if y != HEIGHT - 1:
-        yield x, y + 1
+WIDTH, HEIGHT = map(int, input().split())
+WORLD = stdin.read().split() # `world[y][x]` 이렇게 접근해야함
 
 #
 # Dijkstra
 #
-COST = [[math.inf]*WIDTH for _ in range(HEIGHT)]
-COST[0][0] = 0
+def solve() -> int:
+    COST = [[100000]*WIDTH for _ in range(HEIGHT)]
+    COST[0][0] = 0
 
-priority_queue = [(0, (0, 0))]
-while priority_queue:
-    cost, (x0, y0) = heappop(priority_queue)
-    # assert 0 <= x0 < WIDTH and 0 <= y0 < HEIGHT
+    priority_queue = [(0, (0, 0))]
+    while True:
+        cost, (x0, y0) = heappop(priority_queue)
 
-    # 도착함
-    if x0 == DST_X and y0 == DST_Y:
-        break
+        # 도착함
+        if x0 == WIDTH - 1 and y0 == HEIGHT - 1:
+            return COST[HEIGHT - 1][WIDTH - 1]
 
-    # 인접한 점들 순회
-    for x, y in enumerate_adjacent((x0, y0)):
-        new_cost = cost + WORLD[y][x]
-        if COST[y][x] > new_cost:
+        # 인접한 점들 순회
+        for x, y in [(x0, y0-1), (x0-1, y0), (x0+1, y0), (x0, y0+1)]:
+            if not (0 <= x < WIDTH and 0 <= y < HEIGHT):
+                continue
+
+            new_cost = cost + (1 if WORLD[y][x] == '1' else 0)
+            if COST[y][x] <= new_cost:
+                continue
+
             COST[y][x] = new_cost
             heappush(priority_queue, (new_cost, (x, y)))
 
-print(COST[DST_Y][DST_X])
+print(solve())

@@ -1,12 +1,17 @@
 from re import finditer
 from sys import stdin
-from math import inf
+
+def solution(string: str) -> tuple:
+    minimum = +1000001
+    maximum = -1000001
+    for match in finditer(r'-?[0-9]+', string):
+        number = int(match.group(0))
+        if minimum > number:
+            minimum = number
+        if maximum < number:
+            maximum = number
+    return minimum, maximum
 
 count = int(input())
-minimum = inf
-maximum = -inf
-for match in finditer(r'-?[0-9]+', stdin.read()):
-    number = int(match.group(0))
-    minimum = min(minimum, number)
-    maximum = max(maximum, number)
-print(minimum, maximum)
+string = stdin.read()
+print(*solution(string))

@@ -8,17 +8,7 @@ def dijkstra() -> int:
     COST[0][0] = 0
 
     deque = [(0, 0)]
-    for iter in range(1000000):
-        # TODO
-        debug = 1708 <= iter <= 1709
-        debug = False
-        if debug:
-            print('iter =', iter);
-            print('sum(costs) =', sum(sum(row) for row in COST))
-            print('len(deque) =', len(deque))
-            print('deque[:5] =', deque[:5])
-            print('deque[-5:] =', deque[-5:])
-
+    while True:
         x0, y0 = deque.pop()
 
         # 도착함
@@ -42,11 +32,8 @@ def dijkstra() -> int:
 
             # 코스트가 무조건 0 아니면 1이어서 이렇게 해도 됨
             if is_wall:
-                if debug: print('Push Start', (x, y)) # TODO
                 deque.insert(0, (x, y))
             else:
-                if debug: print('Push End', (x, y)) # TODO
                 deque.append((x, y))
-        if debug: print() # TODO
 
 print(dijkstra())

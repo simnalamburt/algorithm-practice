@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+from random import seed, getrandbits, randrange
+width = randrange(1, 101)
+height = randrange(1, 101)
+world = ['{:0{width}b}'.format(getrandbits(width), width=width) for _ in range(height)]
+world[0] = '0' + world[0][1:]
+world[-1] = world[-1][:-1] + '0'
+
+print(width, height)
+print('\n'.join(world))

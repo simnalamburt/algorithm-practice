@@ -1,0 +1,18 @@
+#!/bin/bash
+for (( ; ; )); do
+  ./inputgen > input4
+  ANSWER_C=$(./a.out < input4)
+  ANSWER_PYTHON=$(python3 solution.py < input4)
+
+  if [[ "$ANSWER_C" = "$ANSWER_PYTHON" ]]; then
+    echo "OK ($ANSWER_C)"
+  else
+    cat <<EOF
+Different!!!
+
+C Solution:       $ANSWER_C
+Python Solution:  $ANSWER_PYTHON
+EOF
+    exit 1
+  fi
+done

@@ -9,7 +9,7 @@ def dijkstra() -> int:
 
     deque = [(0, 0)]
     while True:
-        x0, y0 = deque.pop(0)
+        x0, y0 = deque.pop()
 
         # 도착함
         if x0 == WIDTH - 1 and y0 == HEIGHT - 1:
@@ -32,8 +32,8 @@ def dijkstra() -> int:
 
             # 코스트가 무조건 0 아니면 1이어서 이렇게 해도 됨
             if is_wall:
-                deque.append((x, y))
-            else:
                 deque.insert(0, (x, y))
+            else:
+                deque.append((x, y))
 
 print(dijkstra())

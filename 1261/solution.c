@@ -1,7 +1,9 @@
+#include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 // Linux specific headers
 #include <sys/types.h>
@@ -65,18 +67,48 @@ int main() {
   deque[0] = (tuple) { 0, 0 };
   u16 deque_end = 1;
 
-  for (;;) {
+  // TODO
+  for (unsigned long long iter = 0;; ++iter) {
+    const bool debug = false; // 1708 <= iter && iter <= 1709;
+    // TODO
+    if (debug) {
+      unsigned long long sum = 0;
+      for (u16 i = 0; i < width*height; ++i) { sum += costs[i]; }
+      printf("iter = %llu\n", iter);
+      printf("sum(costs) = %llu\n", sum);
+      printf("len(deque) = %"PRIu16"\n", deque_end);
+      printf("deque[:5] = [");
+      for (u16 i = 0; i < 4; ++i) {
+        printf("(%d, %d), ", deque[i].x, deque[i].y);
+      }
+      printf("(%d, %d)]\n", deque[5].x, deque[5].y);
+      printf("deque[-5:] = [");
+      for (u16 i = deque_end - 5; i < deque_end - 1; ++i) {
+        printf("(%d, %d), ", deque[i].x, deque[i].y);
+      }
+      printf("(%d, %d)]\n", deque[deque_end - 1].x, deque[deque_end - 1].y);
+    }
+
+    assert(0 < deque_end);
+    assert(deque_end < width*height - 1);
+
     const tuple pos = deque[--deque_end];
+
+    assert(0 <= pos.x);
+    assert(0 <= pos.y);
+    assert(pos.x < width);
+    assert(pos.y < height);
 
     // 도착함
     if (pos.x == width - 1 && pos.y == height - 1) {
       break;
     }
 
+    assert(pos.y*width + pos.x < width*height);
     const u16 cost = costs[pos.y*width + pos.x];
 
     // 인접한 점들 순회
-    const tuple adjacencies[] = {
+    const tuple adjacencies[4] = {
       (tuple) { pos.x, pos.y - 1 },
       (tuple) { pos.x - 1, pos.y },
       (tuple) { pos.x + 1, pos.y },
@@ -86,26 +118,43 @@ int main() {
       const u8 x = adjacencies[i].x;
       const u8 y = adjacencies[i].y;
       if (x >= width || y >= height) { continue; }
+      assert(0 <= x);
+      assert(0 <= y);
+      assert(x < width);
+      assert(y < height);
 
-      const u8 is_wall = world[y*(width + 1) + x] == '1';
+      assert(y*(width + 1) + x < height*(width+1));
+      assert(
+        world[y*(width + 1) + x] == '0' ||
+        world[y*(width + 1) + x] == '1'
+      );
+      const bool is_wall = world[y*(width + 1) + x] == '1';
       const u16 new_cost = cost + is_wall;
+      assert(y*width + x < width*height);
       if (costs[y*width + x] <= new_cost) { continue; }
 
       costs[y*width + x] = new_cost;
 
       // 코스트가 무조건 0 아니면 1이어서 이렇게 해도 됨
       if (is_wall) {
+        if (debug) { printf("Push Start (%hhu, %hhu)\n", x, y); } // TODO
         // deque 맨 앞에 원소 삽입
-        for (u8 i = deque_end + 1; i > 0; --i) {
+        if (debug) { printf("(ㅇㅅㅇ\n"); } // TODO
+        for (u16 i = deque_end + 1; i > 0; --i) {
+          if (debug) { printf("ㅇㅅㅇ\n"); } // TODO
           deque[i] = deque[i - 1];
         }
+        if (debug) { printf("ㅇㅅㅇ)\n"); } // TODO
         deque[0] = (tuple) { x, y };
         deque_end += 1;
       } else {
+        if (debug) { printf("Push End (%hhu, %hhu)\n", x, y); } // TODO
         deque[deque_end++] = (tuple) { x, y };
       }
     }
+    if (debug) { putchar('\n'); } // TODO
   }
 
   printf("%"PRIu16"\n", costs[height*width - 1]);
 }
+// TODO: assert 제거

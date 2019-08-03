@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
 from sys import stdin
 
 WIDTH, HEIGHT = map(int, input().split())
 WORLD = stdin.read() # `WORLD[y*(WIDTH+1)+x]` 이렇게 접근해야함
 
-#
-# Dijkstra
-#
-def solve() -> int:
+def dijkstra() -> int:
     COST = [[100000]*WIDTH for _ in range(HEIGHT)]
     COST[0][0] = 0
 
@@ -40,4 +36,4 @@ def solve() -> int:
             else:
                 deque.insert(0, (x, y))
 
-print(solve())
+print(dijkstra())

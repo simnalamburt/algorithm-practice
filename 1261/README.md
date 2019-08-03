@@ -1,13 +1,8 @@
 ```bash
-# 3
-./run < input1
-
-# 0
-./run < input2
-
-# 2
-./run < input3
-
+# 3 0 2, respectively
+python3 solution.py < input1
+python3 solution.py < input2
+python3 solution.py < input3
 # 197
-xz -dc input4.xz | ./run
+xz -dc input4.xz | python3 solution.py
 ```

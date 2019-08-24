@@ -10,7 +10,7 @@ My competitive programming practice.
 - NUMBERGAME
 - 10818: 1등 먹을 수 있을 거 같음
 - 2293: 파스칼로 포팅하기
-- 2294: 1등 먹기
+- 2294: 파스칼로 포팅하기
 
 <br>
 

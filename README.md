@@ -8,6 +8,8 @@ My competitive programming practice.
 - FANMEETINGS: FFT 구현하다가 멈춤. 카라츠바로 빠르게 푸는법은 잘 모르겠음
 - FENCE
 - NUMBERGAME
+- 10818: 1등 먹을 수 있을 거 같음
+- 2293: 파스칼로 포팅하기
 
 <br>
 

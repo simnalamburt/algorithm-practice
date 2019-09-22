@@ -1,50 +1,48 @@
 from math import log10, floor
 
-def value_of(x: int, y: int) -> int:
+def init_table(x0: int, y0: int, width: int, height: int) -> list:
     '''
-    좌표 (x, y) 를 입력하면 해당 좌표에 맞는 값을 출력하는 함수
+    테이블 초기화
+    '''
+    return [
+        [
+            (2*y + 1)**2 + x - y if -y < x <= y else
+            (-2*x + 1)**2 + 3*x + y if x < y <= -x else
+            (-2*y + 1)**2 + 5*y-x if y < -x <= -y else
+            (2*x + 1)**2 - 7*x - y if -x < -y <= x else
+            1
+            for x in range(x0, x0 + width)
+        ]
+        for y in range(y0, y0 + height)
+    ]
+
+def find_length(table: list) -> int:
+    '''
+    입력된 테이블 안에 있는 숫자중 가장 큰 숫자의 자리수를 출력한다
     '''
 
-    if -y < x <= y:
-        return (2*y + 1)**2 + x - y
-    if x < y <= -x:
-        return (-2*x + 1)**2 + 3*x + y
-    if y < -x <= -y:
-        return (-2*y + 1)**2 + 5*y-x
-    if -x < -y <= x:
-        return (2*x + 1)**2 - 7*x - y
-    return 1
+    biggest = max(
+        log10(elem)
+        for row in table
+        for elem in row
+    )
 
-# 입력 받음
-r1, c1, r2, c2 = map(int, input().split())
-
-# 테이블 초기화
-width = c2 - c1 + 1
-height = r2 - c1 + 1
-table = [[0]*width for _ in range(height)]
-for y in range(r1, r2 + 1):
-    for x in range(c1, c2 + 1):
-        table[y - r1][x - c1] = value_of(x, y)
-
-# 칼럼 가로길이 측정
-width_list = [
     # floor(log10(x)) + 1 하면 자리수가 나온다
     #
     # Examples:
     #   log10(11) = 1.0xx       floor(log10(11)) = 2
     #   log10(10) = 1           floor(log10(10)) = 2
     #   log10(9)  = 0.9xx       floor(log10(9))  = 1
-    floor(max(log10(table[y][x]) for y in range(height))) + 1
-    for x in range(width)
-]
+    return floor(biggest) + 1
 
-# 문자열 조립
-answer = '\n'.join(
-    ' '.join(
-        str(table[y][x]).rjust(width_list[x])
-        for x in range(width)
+def format_table(table: list, length: int) -> str:
+    return '\n'.join(
+        ' '.join(str(elem).rjust(length) for elem in row)
+        for row in table
     )
-    for y in range(height)
-)
 
-print(answer)
+y0, x0, y1, x1 = map(int, input().split())
+width, height = x1 - x0 + 1, y1 - y0 + 1
+table = init_table(x0, y0, width, height)
+length = find_length(table)
+print(format_table(table, length))

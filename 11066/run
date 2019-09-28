@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-from functools import lru_cache
-from sys import setrecursionlimit
-
-@lru_cache(None)
-def solve(chapters: tuple) -> int:
+def solve(chapters: list) -> int:
     length = len(chapters)
-    if length <= 1:
-        return 0
 
-    minimum = float('inf')
-    for i in range(0, length-1):
-        cost = chapters[i] + chapters[i+1]
-        answer = solve(chapters[0:i] + (cost,) + chapters[i+2:]) + cost
-        if minimum > answer:
-            minimum = answer
+    # cache[a][b] == (sum(chapters[b:b + a]), solve(chapters[b:b + a]))
+    cache = { width: [-1]*(length - width + 1) for width in range(1, length + 1) }
 
-    return minimum
+    # width == 1
+    for i in range(length - 1 + 1):
+        cache[1][i] = (chapters[i], 0)
 
-setrecursionlimit(2000)
+    for width in range(2, length + 1):
+        for i in range(length - width + 1):
+            cache[width][i] = min(
+                (
+                    (
+                        cache[j][i][0] + cache[width-j][i+j][0],
+                        cache[j][i][0] + cache[width-j][i+j][0] + cache[j][i][1] + cache[width-j][i+j][1],
+                    )
+                    for j in range(1, width)
+                ),
+                key=lambda e:e[1]
+            )
+
+    return cache[length][0][1]
+
 for _ in range(int(input())):
     input()
-    chapters = tuple(int(x) for x in input().split())
+    chapters = [int(x) for x in input().split()]
     # assert 3 <= len(chapters) <= 500
     # assert all(file <= 10000 for file in chapters)
 

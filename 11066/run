@@ -14,8 +14,8 @@ def solve(chapters: list) -> int:
     ]
     for width in range(2, length + 1):
         cache[width] = [
-            min(
-                summation[i + width] - summation[i] + cache[j][i] + cache[width-j][i+j]
+            summation[i + width] - summation[i] + min(
+                cache[j][i] + cache[width-j][i+j]
                 for j in range(1, width)
             )
             for i in range(length - width + 1)

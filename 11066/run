@@ -2,27 +2,26 @@
 def solve(chapters: list) -> int:
     length = len(chapters)
 
-    # cache[a][b] == (sum(chapters[b:b + a]), solve(chapters[b:b + a]))
-    cache = { width: [-1]*(length - width + 1) for width in range(1, length + 1) }
+    # summation[a] = sum(chapters[:a])
+    summation = [0]*(length + 1)
+    for i in range(1, length + 1):
+        summation[i] = summation[i - 1] + chapters[i - 1]
 
-    # width == 1
-    for i in range(length - 1 + 1):
-        cache[1][i] = (chapters[i], 0)
-
+    # cache[a][b] == solve(chapters[b:b + a])
+    cache = [None] + [
+        [0]*(length - width + 1)
+        for width in range(1, length + 1)
+    ]
     for width in range(2, length + 1):
-        for i in range(length - width + 1):
-            cache[width][i] = min(
-                (
-                    (
-                        cache[j][i][0] + cache[width-j][i+j][0],
-                        cache[j][i][0] + cache[width-j][i+j][0] + cache[j][i][1] + cache[width-j][i+j][1],
-                    )
-                    for j in range(1, width)
-                ),
-                key=lambda e:e[1]
+        cache[width] = [
+            min(
+                summation[i + width] - summation[i] + cache[j][i] + cache[width-j][i+j]
+                for j in range(1, width)
             )
+            for i in range(length - width + 1)
+        ]
 
-    return cache[length][0][1]
+    return cache[length][0]
 
 for _ in range(int(input())):
     input()

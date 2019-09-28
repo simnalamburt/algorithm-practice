@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import math
+from sys import setrecursionlimit
+
 def solve(chapters: list) -> int:
     length = len(chapters)
 
@@ -9,25 +12,52 @@ def solve(chapters: list) -> int:
 
     # cache[a][b] == solve(chapters[b:b + a])
     cache = [None] + [
-        [0]*(length - width + 1)
+        [-1]*(length - width + 1)
         for width in range(1, length + 1)
     ]
-    for width in range(2, length + 1):
-        cache[width] = [
-            summation[i + width] - summation[i] + min(
-                cache[j][i] + cache[width-j][i+j]
-                for j in range(1, width)
-            )
-            for i in range(length - width + 1)
-        ]
 
-    return cache[length][0]
+    def solve_actual(begin: int, length: int, upper_bound: int) -> int:
+        '''
+        upper_bound: 계산 결과가 upper_bound 이상일 경우, 정확한 결과 대신
+        math.inf 를 반환해도 됨
+        '''
 
-for _ in range(int(input())):
-    input()
-    chapters = [int(x) for x in input().split()]
-    # assert 3 <= len(chapters) <= 500
-    # assert all(file <= 10000 for file in chapters)
+        if length <= 1:
+            return 0
 
-    answer = solve(chapters)
-    print(answer)
+        sigma = summation[begin + length] - summation[begin]
+        if length == 2:
+            return sigma
+        if sigma >= upper_bound:
+            return math.inf
+
+        minimum = math.inf
+        new_upper_bound = upper_bound - sigma
+        for i in range(1, length):
+            result = solve_internal(begin, i, new_upper_bound - 1)
+            result += solve_internal(begin + i, length - i, new_upper_bound - result)
+            if minimum > result:
+                minimum = result
+
+        return sigma + minimum
+
+    def solve_internal(begin: int, length: int, upper_bound: int) -> int:
+        if cache[length][begin] == -1:
+            cache[length][begin] = solve_actual(begin, length, upper_bound)
+        return cache[length][begin]
+
+    return solve_internal(0, length, math.inf)
+
+def main() -> None:
+    setrecursionlimit(2000)
+    for _ in range(int(input())):
+        input()
+        chapters = [int(x) for x in input().split()]
+        # assert 3 <= len(chapters) <= 500
+        # assert all(file <= 10000 for file in chapters)
+
+        answer = solve(chapters)
+        print(answer)
+
+if __name__ == '__main__':
+    main()

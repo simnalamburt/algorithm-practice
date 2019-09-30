@@ -9,6 +9,7 @@ My competitive programming practice.
 - FENCE
 - NUMBERGAME
 - 10818: 1등 먹을 수 있을 거 같음
+- 11066: 어떻게 하면 더 빠르게 만들 수 있을까
 
 <br>
 

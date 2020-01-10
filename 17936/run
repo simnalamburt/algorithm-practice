@@ -31,7 +31,7 @@ def init_tree(node: int, depth: int = 0, parent: int = 0) -> None:
     for child in c:
         init_tree(child, depth+1, node)
 
-def init_depth(node: int, depth: int) -> None:
+def init_depth(node: int, depth: int = 0) -> None:
     '''
     주어진 서브트리의 깊이 정보를 초기화함
     '''
@@ -51,8 +51,22 @@ def dump_state() -> None:
     print()
 
 def change_root(new_root: int) -> None:
-    # TODO: 최적화 가능. 트리 전체를 다시 초기화할필요는 없다.
-    init_tree(new_root)
+    global root
+    if new_root == root:
+        return
+
+    old_root = root
+    root = new_root
+
+    parents[new_root], current, next = 0, new_root, parents[new_root]
+    while next != 0:
+        # 기존 부모와의 연결 해제
+        children[next] = [n for n in children[next] if n != current]
+        # 새 부모 연결 생성
+        children[current].append(next)
+        parents[next], current, next = current, next, parents[next]
+
+    init_depth(new_root)
 
 def each_subtree(node: int):
     '''
@@ -170,3 +184,5 @@ for _ in range(query_count):
         # 11 x: x의 서브트리에 있는 정점들의 가중치의 합을 출력한다.
         x, = args
         print(sum(values[node] for node in each_subtree(x)))
+
+# TODO: list에서 delete하는 코드 시간복잡도 낮추자

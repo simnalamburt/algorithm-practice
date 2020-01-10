@@ -1,5 +1,12 @@
 from sys import stdin
-next(stdin)
-for line in stdin:
-    line = line.strip()
-    print(' '.join(word[::-1] for word in line.split(' ')))
+
+def main():
+    next(stdin)
+    input = stdin.read()
+
+    for line in input.splitlines():
+        line = line.strip()
+        print(' '.join(word[::-1] for word in line.split(' ')))
+
+if __name__ == '__main__':
+    main()

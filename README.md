@@ -10,6 +10,8 @@ My competitive programming practice.
 - NUMBERGAME
 - 10818: 1등 먹을 수 있을 거 같음
 - 11066: 어떻게 하면 더 빠르게 만들 수 있을까
+- 14002: 다른 비슷한 문제 이미 풀어서 기존 풀이 살짝만 고치면 됨
+- 17936: Rust로 옮겨보자
 
 <br>
 

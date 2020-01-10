@@ -22,7 +22,8 @@ root = int(input())
 
 def init_tree(node: int, depth: int = 0, parent: int = 0) -> None:
     '''
-    주어진 루트로 트리 부모자식관계, 깊이 정보를 초기화함
+    주어진 루트로 트리 부모자식관계, 깊이 정보를 초기화함.
+    Time complexity: θ(sizeofsubtree(node))
     '''
     parents[node] = parent
     c = indices[node] - {parent}
@@ -34,6 +35,7 @@ def init_tree(node: int, depth: int = 0, parent: int = 0) -> None:
 def init_depth(node: int, depth: int = 0) -> None:
     '''
     주어진 서브트리의 깊이 정보를 초기화함
+    Time complexity: θ(sizeofsubtree(node))
     '''
     depths[node] = depth
     for child in children[node]:
@@ -51,6 +53,10 @@ def dump_state() -> None:
     print()
 
 def change_root(new_root: int) -> None:
+    '''
+    트리의 루트를 new_root로 바꿈
+    Time complexity: θ(distance(old_root, new_root))
+    '''
     global root
     if new_root == root:
         return
@@ -72,6 +78,7 @@ def each_subtree(node: int):
     '''
     node의 서브트리(node 포함) 안에 있는 모든 정점들을 DFS로 순회하는
     generator를 반환한다.
+    Time complexity: θ(sizeofsubtree(node))
     '''
     yield node
     for child in children[node]:
@@ -81,6 +88,7 @@ def each_path(a: int, b: int):
     '''
     a와 b를 잇는 경로(a, b 포함) 상에 있는 모든 정점들을 순회하는 generator를
     반환한다. 순서에는 아무런 보장이 없다.
+    Time complexity: θ(distance(a, b))
     '''
     if depths[a] < depths[b]:
         a, b = b, a
@@ -100,6 +108,7 @@ def each_path(a: int, b: int):
 def is_parent_of(a: int, b: int) -> bool:
     '''
     a가 b의 부모인지 검사
+    Time complexity: θ(|depth[a] - depth[b]|)
     '''
     depth_a = depths[a]
     while depth_a < depths[b]:
@@ -131,10 +140,12 @@ for _ in range(query_count):
         # 3 x: x의 서브트리에 있는 정점들의 가중치의 최솟값을 출력한다.
         x, = args
         print(min(values[node] for node in each_subtree(x)))
+        # TODO: 서브트리에 부분min 미리 저장해서 최적화 가능
     elif cmd == 4:
         # 4 x: x의 서브트리에 있는 정점들의 가중치의 최댓값을 출력한다.
         x, = args
         print(max(values[node] for node in each_subtree(x)))
+        # TODO: 서브트리에 부분max 미리 저장해서 최적화 가능
     elif cmd == 5:
         # 5 x y: x의 서브트리에 있는 정점들의 가중치를 y만큼 더한다.
         x, y = args
@@ -184,3 +195,4 @@ for _ in range(query_count):
         # 11 x: x의 서브트리에 있는 정점들의 가중치의 합을 출력한다.
         x, = args
         print(sum(values[node] for node in each_subtree(x)))
+        # TODO: 서브트리에 부분합 미리 저장해서 최적화 가능

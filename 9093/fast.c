@@ -3,9 +3,7 @@
 // Reference:
 //   https://www.acmicpc.net/problem/9093
 
-#include <stdio.h> // TODO: write(2) 로 대체하자
-#include <stdint.h>
-#include <stdbool.h>
+#include <stdlib.h>
 #include <inttypes.h>
 
 // Linux specific headers
@@ -27,9 +25,12 @@ int main() {
 
   // Perform mmap(2) to stdin
   const u8 * const addr = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, STDIN_FILENO, 0);
+  u64 idx = 0;
   if (addr == MAP_FAILED) { return -1; }
 
-  u64 idx = 0;
+  // Allocate write buffer
+  u8 * const buffer = malloc(file_size + 1);
+  u64 idx_write = 0;
 
   // Skip the first line
   for (; idx < file_size; ++idx) {
@@ -42,12 +43,14 @@ int main() {
     const u8 ch = addr[idx];
     if (ch != ' ' && ch != '\n') { continue; }
 
-    for (u64 i = idx - 1; printed_until <= i; --i) { putchar(addr[i]); }
-    putchar(ch);
+    for (u64 i = idx - 1; printed_until <= i; --i) { buffer[idx_write++] = addr[i]; }
+    buffer[idx_write++] = ch;
     printed_until = idx + 1;
   }
   if (printed_until != file_size) {
-    for (u64 i = idx - 1; printed_until <= i; --i) { putchar(addr[i]); }
-    putchar('\n');
+    for (u64 i = idx - 1; printed_until <= i; --i) { buffer[idx_write++] = addr[i]; }
+    buffer[idx_write++] = '\n';
   }
+
+  write(STDOUT_FILENO, buffer, idx_write);
 }

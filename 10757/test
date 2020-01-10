@@ -13,13 +13,11 @@ def test(A, B) -> bool:
         print(f'{a.stdout} != {b.stdout}')
         exit(-1)
 
+NINES = 10**10000 - 1
+
 test(10000, 500)
-
-for _ in range(10):
-    test(randint(1, 1000), randint(1, 1000))
-
 test(10**1000, 10**1000)
 
-NINES = 10**10000 - 1
-while True:
-    test(randint(1, NINES), randint(1, NINES))
+for _ in range(10): test(randint(1, 1000), randint(1, 1000))
+for _ in range(10): test(randint(1, 1000), randint(1, NINES)) # TODO: 백준에 추가해야함. https://www.acmicpc.net/board/view/45077
+while True: test(randint(1, NINES), randint(1, NINES))

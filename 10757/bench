@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+from subprocess import run
+from time import time
+
+NINES = 10**10000 - 1
+INPUT = b'%d %d' % (NINES, NINES)
+ITER = 200
+
+begin = time()
+for _ in range(ITER):
+    run(['./solution'], input=INPUT, capture_output=True)
+elapsed = time() - begin
+print(f'{elapsed / ITER * 1000} ms')

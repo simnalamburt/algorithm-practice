@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 node_count, query_count = map(int, input().split())
 
 # Graph

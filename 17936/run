@@ -2,19 +2,19 @@
 node_count, query_count = map(int, input().split())
 
 # Graph
-indices = [None] + [[] for _ in range(node_count)] # 1-base array
-values = [None] * (node_count + 1) # 1-base array
+indices = [None] + [set() for _ in range(node_count)] # 1-base Array[Set[int]]
+values = [None] * (node_count + 1) # 1-base Array[int]
 
 # Tree
 root = None
-parents = [None] * (node_count + 1) # 1-base array
-children = [None] * (node_count + 1) # 1-base array
-depths = [None] * (node_count + 1) # 1-base array
+parents = [None] * (node_count + 1) # 1-base Array[int]
+children = [None] * (node_count + 1) # 1-base Array[Set[int]]
+depths = [None] * (node_count + 1) # 1-base Array[int]
 
 for _ in range(node_count - 1):
     u, v = map(int, input().split())
-    indices[u].append(v)
-    indices[v].append(u)
+    indices[u].add(v)
+    indices[v].add(u)
 for i in range(1, node_count + 1):
     values[i] = int(input())
 root = int(input())
@@ -25,7 +25,7 @@ def init_tree(node: int, depth: int = 0, parent: int = 0) -> None:
     주어진 루트로 트리 부모자식관계, 깊이 정보를 초기화함
     '''
     parents[node] = parent
-    c = [x for x in indices[node] if x!=parent]
+    c = indices[node] - {parent}
     children[node] = c
     depths[node] = depth
     for child in c:
@@ -61,9 +61,9 @@ def change_root(new_root: int) -> None:
     parents[new_root], current, next = 0, new_root, parents[new_root]
     while next != 0:
         # 기존 부모와의 연결 해제
-        children[next] = [n for n in children[next] if n != current]
+        children[next] -= {current}
         # 새 부모 연결 생성
-        children[current].append(next)
+        children[current].add(next)
         parents[next], current, next = current, next, parents[next]
 
     init_depth(new_root)
@@ -163,16 +163,16 @@ for _ in range(query_count):
 
         # 기존 부모로부터 x를 제거
         old_parent = parents[x]
-        indices[x] = [n for n in indices[x] if n != old_parent]
-        indices[old_parent] = [n for n in indices[old_parent] if n != x]
+        indices[x] -= {old_parent}
+        indices[old_parent] -= {x}
         parents[x] = None
-        children[old_parent] = [n for n in children[old_parent] if n != x]
+        children[old_parent] -= {x}
 
         # y의 자식에 x를 추가
-        indices[x].append(y)
-        indices[y].append(x)
+        indices[x].add(y)
+        indices[y].add(x)
         parents[x] = y
-        children[y].append(x)
+        children[y].add(x)
 
         # depth 정보 다시 초기화
         init_depth(x, depths[y] + 1)
@@ -184,5 +184,3 @@ for _ in range(query_count):
         # 11 x: x의 서브트리에 있는 정점들의 가중치의 합을 출력한다.
         x, = args
         print(sum(values[node] for node in each_subtree(x)))
-
-# TODO: list에서 delete하는 코드 시간복잡도 낮추자

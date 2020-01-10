@@ -1,2 +1,1 @@
-uses strutils;
-var a:String;begin read(a);write(Hex2Dec(a))end.
+var a:String;b,c:Int64;begin read(a);val('$'+a,b,c);write(b)end.

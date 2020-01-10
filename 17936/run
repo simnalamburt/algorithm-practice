@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+node_count, query_count = map(int, input().split())
+
+# Graph
+indices = [None] + [[] for _ in range(node_count)] # 1-base array
+values = [None] * (node_count + 1) # 1-base array
+
+# Tree
+root = None
+parents = [None] * (node_count + 1) # 1-base array
+children = [None] * (node_count + 1) # 1-base array
+depths = [None] * (node_count + 1) # 1-base array
+
+for _ in range(node_count - 1):
+    u, v = map(int, input().split())
+    indices[u].append(v)
+    indices[v].append(u)
+for i in range(1, node_count + 1):
+    values[i] = int(input())
+root = int(input())
+
+
+def init_tree(node: int, depth: int = 0, parent: int = 0) -> None:
+    '''
+    주어진 루트로 트리 부모자식관계, 깊이 정보를 초기화함
+    '''
+    parents[node] = parent
+    c = [x for x in indices[node] if x!=parent]
+    children[node] = c
+    depths[node] = depth
+    for child in c:
+        init_tree(child, depth+1, node)
+
+def init_depth(node: int, depth: int) -> None:
+    '''
+    주어진 서브트리의 깊이 정보를 초기화함
+    '''
+    depths[node] = depth
+    for child in children[node]:
+        init_depth(child, depth+1)
+
+def dump_state() -> None:
+    '''
+    State 변수들을 모두 출력
+    '''
+    print(f'indices:    {indices[1:]}')
+    print(f'values:     {values[1:]}')
+    print(f'parents:    {parents[1:]}')
+    print(f'children:   {children[1:]}')
+    print(f'depths:     {depths[1:]}')
+    print()
+
+def change_root(new_root: int) -> None:
+    # TODO: 최적화 가능. 트리 전체를 다시 초기화할필요는 없다.
+    init_tree(new_root)
+
+def each_subtree(node: int):
+    '''
+    node의 서브트리(node 포함) 안에 있는 모든 정점들을 DFS로 순회하는
+    generator를 반환한다.
+    '''
+    yield node
+    for child in children[node]:
+        yield from each_subtree(child)
+
+def each_path(a: int, b: int):
+    '''
+    a와 b를 잇는 경로(a, b 포함) 상에 있는 모든 정점들을 순회하는 generator를
+    반환한다. 순서에는 아무런 보장이 없다.
+    '''
+    if depths[a] < depths[b]:
+        a, b = b, a
+    # assert depths[a] >= depths[b]
+    for _ in range(depths[a] - depths[b]):
+        yield a
+        a = parents[a]
+    # assert depths[a] == depths[b]
+    while a != b:
+        yield a
+        yield b
+        a = parents[a]
+        b = parents[b]
+    # assert a == b
+    yield a
+
+def is_parent_of(a: int, b: int) -> bool:
+    '''
+    a가 b의 부모인지 검사
+    '''
+    depth_a = depths[a]
+    while depth_a < depths[b]:
+        b = parents[b]
+    # assert depths[a] >= depths[b]
+    return a == b
+
+
+# 트리 부모자식관계 초기화
+init_tree(root)
+
+for _ in range(query_count):
+    cmd, *args = map(int, input().split())
+    if cmd == 0:
+        # 0 x y: x의 서브트리에 있는 정점들의 가중치를 y로 바꾼다.
+        x, y = args
+        for node in each_subtree(x):
+            values[node] = y
+    elif cmd == 1:
+        # 1 r: 트리의 루트를 r로 바꾼다.
+        r, = args
+        change_root(r)
+    elif cmd == 2:
+        # 2 x y z: x와 y를 잇는 경로에 있는 정점들의 가중치를 z로 바꾼다.
+        x, y, z = args
+        for node in each_path(x, y):
+            values[node] = z
+    elif cmd == 3:
+        # 3 x: x의 서브트리에 있는 정점들의 가중치의 최솟값을 출력한다.
+        x, = args
+        print(min(values[node] for node in each_subtree(x)))
+    elif cmd == 4:
+        # 4 x: x의 서브트리에 있는 정점들의 가중치의 최댓값을 출력한다.
+        x, = args
+        print(max(values[node] for node in each_subtree(x)))
+    elif cmd == 5:
+        # 5 x y: x의 서브트리에 있는 정점들의 가중치를 y만큼 더한다.
+        x, y = args
+        for node in each_subtree(x):
+            values[node] += y
+    elif cmd == 6:
+        # 6 x y z: x와 y를 잇는 경로에 있는 정점들의 가중치를 z만큼 더한다.
+        x, y, z = args
+        for node in each_path(x, y):
+            values[node] += z
+    elif cmd == 7:
+        # 7 x y: x와 y를 잇는 경로에 있는 정점들의 가중치의 최솟값을 출력한다.
+        x, y = args
+        print(min(values[node] for node in each_path(x, y)))
+    elif cmd == 8:
+        # 8 x y: x와 y를 잇는 경로에 있는 정점들의 가중치의 최댓값을 출력한다.
+        x, y = args
+        print(max(values[node] for node in each_path(x, y)))
+    elif cmd == 9:
+        # 9 x y: x의 부모를 y로 바꾼다. 만약 x의 서브트리 안에 정점 y가 존재한다면 이 쿼리를 무시한다.
+        x, y = args
+
+        # x의 서브트리 안에 y가 존재하므로 이 쿼리 무시
+        if is_parent_of(x, y):
+            continue
+
+        # 기존 부모로부터 x를 제거
+        old_parent = parents[x]
+        indices[x] = [n for n in indices[x] if n != old_parent]
+        indices[old_parent] = [n for n in indices[old_parent] if n != x]
+        parents[x] = None
+        children[old_parent] = [n for n in children[old_parent] if n != x]
+
+        # y의 자식에 x를 추가
+        indices[x].append(y)
+        indices[y].append(x)
+        parents[x] = y
+        children[y].append(x)
+
+        # depth 정보 다시 초기화
+        init_depth(x, depths[y] + 1)
+    elif cmd == 10:
+        # 10 x y: x와 y를 잇는 경로에 있는 정점들의 가중치의 합을 출력한다.
+        x, y = args
+        print(sum(values[node] for node in each_path(x, y)))
+    elif cmd == 11:
+        # 11 x: x의 서브트리에 있는 정점들의 가중치의 합을 출력한다.
+        x, = args
+        print(sum(values[node] for node in each_subtree(x)))

@@ -1,69 +1,52 @@
 // gcc solution.c -O2 -Wall -Wextra -Wpedantic -Werror
 #include <stdio.h>
-#include <inttypes.h>
-
-static int8_t total_guitar_count;
-static uint64_t DATA[10];
-static int8_t result_songs = 0;
-static int8_t result_guitars = -1;
-
-static void callback(uint16_t guitar_bitset);
-static void for_each_combination(int8_t pos, uint16_t guitar_bitset);
 
 int main() {
-  int8_t song_count;
-  scanf("%" SCNi8 "%" SCNi8, &total_guitar_count, &song_count);
+  //
+  // Handle input
+  //
+  int N, M;
+  scanf("%d%d", &N, &M);
 
-  char buffer[song_count + 1];
-
-  for (int8_t i = 0; i < total_guitar_count; ++i) {
+  long DATA[N];
+  char buffer[M + 1];
+  for (int i = 0; i < N; ++i) {
     scanf("%*s%s", buffer);
 
-    uint64_t sum = 0;
-    for (int8_t n = 0; n < song_count; ++n) {
-      char x = buffer[n];
-      if (x == 'Y') {
-        sum += 1ull << n;
+    long sum = 0;
+    for (int n = 0; n < M; ++n) {
+      if (buffer[n] == 'Y') {
+        sum += 1l << n;
       }
     }
 
     DATA[i] = sum;
   }
 
-  for_each_combination(total_guitar_count, 0);
+  //
+  // Brute-force
+  //
+  int songs_max = 0;
+  int guitars_min = -1;
+  for (int bitset_guitars = 0; bitset_guitars < 1 << N; ++bitset_guitars) {
+    long bitset_songs = 0;
 
-  printf("%d\n", result_guitars);
-}
+    for (int i = 0; i < N; ++i) {
+      if (bitset_guitars & (1 << i)) {
+        bitset_songs |= DATA[i];
+      }
+    }
 
-// pos:           [0, 10] 범위의 정수
-// guitar_bitset: [0, 2^10) 범위의 정수
-static void for_each_combination(int8_t pos, uint16_t guitar_bitset) {
-  if (pos == 0) {
-    callback(guitar_bitset);
-    return;
-  }
+    const int count_guitars = __builtin_popcount(bitset_guitars);
+    const int count_songs = __builtin_popcountl(bitset_songs);
 
-  for_each_combination(pos - 1, guitar_bitset);
-  for_each_combination(pos - 1, guitar_bitset + (1 << (pos - 1)));
-}
-
-// 매 조합마다 실행되는 함수
-static void callback(uint16_t guitar_bitset) {
-  uint64_t bits_union = 0;
-
-  for (int8_t i = 0; i < total_guitar_count; ++i) {
-    if (guitar_bitset & (1 << i)) {
-      bits_union |= DATA[i];
+    if (count_songs > songs_max) {
+      songs_max = count_songs;
+      guitars_min = count_guitars;
+    } else if (count_songs == songs_max && count_guitars < guitars_min) {
+      guitars_min = count_guitars;
     }
   }
 
-  const int8_t count_guitars = __builtin_popcount(guitar_bitset);
-  const int8_t count_songs = __builtin_popcountll(bits_union);
-
-  if (count_songs > result_songs) {
-    result_songs = count_songs;
-    result_guitars = count_guitars;
-  } else if (count_songs == result_songs && count_guitars < result_guitars) {
-    result_guitars = count_guitars;
-  }
+  printf("%d\n", guitars_min);
 }

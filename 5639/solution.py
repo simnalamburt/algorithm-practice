@@ -5,15 +5,11 @@ INPUTS = [*map(int, stdin), inf]
 
 def solve(idx: int = 0, upper_bound = inf) -> int:
     pivot = INPUTS[idx]
+    if upper_bound < pivot:
+        return idx
 
-    # 오른쪽 자식의 인덱스
-    idx_right = (
-        # 왼쪽 자식이 존재할 경우
-        solve(idx + 1, min(upper_bound, pivot))
-        if pivot > INPUTS[idx + 1] else
-        # 왼쪽 자식이 존재하지 않을 경우
-        idx + 1
-    )
+    # 왼쪽 서브트리가 끝나는 인덱스 == 오른쪽 서브트리 시작지점 인덱스
+    idx_right = solve(idx + 1, pivot)
 
     # 트리가 끝난 지점의 인덱스
     idx_end = (

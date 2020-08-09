@@ -22,23 +22,20 @@ static u32 INPUTS[10001];
 
 static u16 solve(u16 idx, u32 upper_bound) {
   const u32 pivot = INPUTS[idx];
+  // pivot이 upper_bound 보다 크다 = 이 트리는 Nil이다
   if (upper_bound < pivot) {
     return idx;
   }
 
   // 왼쪽 서브트리가 끝나는 인덱스 == 오른쪽 서브트리 시작지점 인덱스
   const u16 idx_right = solve(idx + 1, pivot);
-
   // 오른쪽 서브트리가 끝나는 인덱스
-  const u16 idx_end = (
-    upper_bound > INPUTS[idx_right] ?
-    // 오른쪽 자식이 존재할 경우
-    solve(idx_right, upper_bound) :
-    // 오른쪽 자식이 존재하지 않을 경우
-    idx_right
-  );
+  const u16 idx_end = solve(idx_right, upper_bound);
 
+  // 방문
   printf("%" PRIu32 "\n", pivot);
+
+  // 트리가 끝난 지점 리턴
   return idx_end;
 }
 
@@ -82,5 +79,5 @@ int main() {
   // 알고리즘 수행
   //
   INPUTS[len] = UINT32_MAX;
-  solve(0, UINT32_MAX);
+  solve(0, 1000000);
 }

@@ -1,11 +1,10 @@
 c,I,J;
 char *B,*W;
-N(n,s){
+N(n){
   n=0;
-  s=1;
   for(;;){
     c=B[I++];
-    if(c<48)return s*n;
+    if(c<48)return n;
     n=10*n+c-48;
   }
 }

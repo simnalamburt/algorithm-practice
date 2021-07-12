@@ -15,9 +15,9 @@ P(n,b){
 }
 
 main;__libc_start_main(T){
-  char m[1<<12],w[1<<12];
+  char m[1<<16],w[1<<12];
   B=m;
-  read(0,B,1<<12);
+  read(0,B,1<<16);
   W=w;
 
   T=N();

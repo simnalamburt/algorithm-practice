@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 def calc(x1: int, y1: int, r1: int, x2: int, y2: int, r2: int) -> int:
     dist_square = (x1-x2)**2 + (y1-y2)**2
     inner_bound = (r1 - r2)**2

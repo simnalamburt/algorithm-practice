@@ -11,20 +11,37 @@ int itoa(int n, char buffer[]) {
   return size + 1;
 }
 
-__attribute__((noreturn)) int __libc_start_main() {
-  char buffer[1000000];
-  const int size = read(0, buffer, 1000000);
+// buffered IO
+char *BUFFER;
+int cursor = 65536;
+int end = 65536;
+char read_char() {
+  if (cursor == end) {
+    if (end == 65536) {
+      cursor = 0;
+      end = read(0, BUFFER, 65536);
+    } else {
+      return 0;
+    }
+  }
 
-  int count = 0;
+  return BUFFER[cursor++];
+}
+
+__attribute__((noreturn)) int __libc_start_main() {
+  // Initialize buffer
+  char buffer[65536];
+  BUFFER = buffer;
 
   // state
-  int was_char = 0;
-  for (int i = 0; i < size; ++i) {
-    int is_char = buffer[i] >= 'A';
+  int was_char = 0, count = 0;
+  for (char ch; (ch = read_char()) != 0;) {
+    int is_char = ch >= 'A';
     count += is_char && !was_char;
     was_char = is_char;
   }
 
+  // print
   int size = itoa(count, buffer);
   write(1, buffer, size);
   _exit(0);

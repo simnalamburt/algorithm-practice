@@ -1,44 +1,35 @@
-#include <unistd.h>
+main;
+__libc_start_main(){
+  char buf[0x10000];
 
-int main() { }
-int __libc_start_main() {
-  // buffered IO
-  char buffer[0x10000];
-  read(0, buffer, 0x10000);
-
-  // store
-  int counter[26];
-  for (int i = 0;; ++i) {
+  int tbl[26];
+  for (int i = 0x10000;; ++i) {
     if (i == 0x10000) {
-      read(0, buffer, 0x10000);
+      read(0, buf, 0x10000);
       i = 0;
     }
 
-    char ch = buffer[i];
+    int ch = buf[i];
     if (ch == '\n') { break; }
-    ch -= ch >= 'a' ? 'a' : 'A';
-    ++counter[ch];
+    ++tbl[(ch & 0x1F) - 1];
   }
 
-  // find max
-  int max_count = counter[0];
-  int max_idx = 0;
-  for (int i = 1; i < 26; ++i) {
-    if (counter[i] > max_count) {
-      max_count = counter[i];
-      max_idx = i;
-    }
-  }
-
-  // count max
-  int count = 0;
+  int max = 0, idx = -1;
   for (int i = 0; i < 26; ++i) {
-    if (counter[i] == max_count) {
-      ++count;
+    if (tbl[i] > max) {
+      max = tbl[i];
+      idx = i;
     }
   }
 
-  char result = count > 1 ? '?' : max_idx + 'A';
-  write(1, &result, 1);
+  int ctr = 0;
+  for (int i = 0; i < 26; ++i) {
+    if (tbl[i] == max) {
+      ++ctr;
+    }
+  }
+
+  char ch = ctr > 1 ? '?' : idx + 'A';
+  write(1, &ch, 1);
   _exit(0);
 }

@@ -2,14 +2,20 @@
 
 int main() { }
 int __libc_start_main() {
-  // read
-  char buffer[1000000];
-  int size = read(0, buffer, 1000000);
+  // buffered IO
+  char buffer[0x10000];
+  read(0, buffer, 0x10000);
 
   // store
   int counter[26];
-  for (int i = 0; i < size; ++i) {
+  for (int i = 0;; ++i) {
+    if (i == 0x10000) {
+      read(0, buffer, 0x10000);
+      i = 0;
+    }
+
     char ch = buffer[i];
+    if (ch == '\n') { break; }
     ch -= ch >= 'a' ? 'a' : 'A';
     ++counter[ch];
   }

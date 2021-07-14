@@ -1,29 +1,16 @@
-char *BUF;
-int I;
-int scan_uint() {
-  int n = 0, c;
-  while ('0' <= (c = BUF[I++])) { n = 10*n + c - '0'; }
-  return n;
-}
-
 main;__libc_start_main() {
   char buf[6];
-  BUF = buf;
   read(0, buf, 6);
 
-  int H = scan_uint();
-  int M = scan_uint();
+  int H = 0, M = 0, i = 0, c;
+  while ('0' <= (c = buf[i++])) { H = 10*H + c - '0'; }
+  while ('0' <= (c = buf[i++])) { M = 10*M + c - '0'; }
 
   M -= 45;
-  if (M < 0) {
-    M += 60;
-    H -= 1;
-  }
-  if (H < 0) {
-    H += 24;
-  }
+  if (M < 0) { M += 60; --H; }
+  if (H < 0) { H += 24; }
 
-  int i = 0;
+  i = 0;
   if (H >= 10) { buf[i++] = '0' + H/10; }
   buf[i++] = '0' + H%10;
   buf[i++] = ' ';

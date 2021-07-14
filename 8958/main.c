@@ -1,5 +1,3 @@
-#include <unistd.h>
-
 char *PTR;
 
 int scan_uint() {
@@ -19,7 +17,7 @@ int print_uint(int n, char buf[]) {
   return offset + 1;
 }
 
-int main() {
+main;__libc_start_main() {
   char buffer[1024*8] = {0}, wbuffer[1024];
   read(0, buffer, 1024*8);
   PTR = buffer;

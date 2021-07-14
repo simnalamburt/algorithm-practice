@@ -8,7 +8,7 @@ int parse_uint(char buf[], int size) {
   return n;
 }
 
-int main() {
+int __libc_start_main() {
   char buf[10100];
   int size = read(0, buf, 3);
   int N = parse_uint(buf, size);
@@ -16,8 +16,7 @@ int main() {
   // buffer
   int i = 0;
   for (int a = 1; a <= N; ++a) {
-    for (int b = 0; b < N - a; ++b) { buf[i++] = ' '; }
-    for (int b = 0; b < a; ++b) { buf[i++] = '*'; }
+    for (int b = 0; b < N; ++b) { buf[i++] = b < N - a ? ' ' : '*'; }
     buf[i++] = '\n';
   }
 
@@ -25,3 +24,5 @@ int main() {
   write(1, buf, i);
   _exit(0);
 }
+
+int main;

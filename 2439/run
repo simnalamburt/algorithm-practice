@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail; IFS=$'\n\t'
+
+for i in {1..100}; do
+  printf '%d\n' "$((101 - i))" | ./a.out
+  printf '%d' "$((101 - i))" | ./a.out
+done

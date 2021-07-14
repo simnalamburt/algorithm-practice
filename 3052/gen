@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+from sys import argv
+from random import seed, choice
+seed(argv[1])
+for _ in range(10):
+    print(choice(range(1001)))

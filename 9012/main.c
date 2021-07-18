@@ -11,8 +11,8 @@ main;__libc_start_main() {
   read(0, buf, 16 * 1024);
   PTR = buf;
 
-  int N = scan_uint();
-  for (int i = 0; i < N; ++i) {
+  int N = scan_uint(), i = 0;
+  for (int _ = 0; _ < N; ++_) {
     int count = 0;
     for (char ch; (ch = *PTR++) != '\n';) {
       count += ch == '(' ? 1 : -1;
@@ -22,10 +22,15 @@ main;__libc_start_main() {
       }
     }
     if (count == 0) {
-      write(1, "YES\n", 4);
+      buf[i++] = 'Y';
+      buf[i++] = 'E';
+      buf[i++] = 'S';
     } else {
-      write(1, "NO\n", 3);
+      buf[i++] = 'N';
+      buf[i++] = 'O';
     }
+    buf[i++] = '\n';
   }
+  write(1, buf, i);
   _exit(0);
 }

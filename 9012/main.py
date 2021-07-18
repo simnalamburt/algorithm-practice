@@ -1,11 +1,7 @@
-def f(line: str) -> bool:
+for _ in range(int(input())):
     count = 0
-    for ch in line:
+    for ch in input():
         count += 1 if ch == '(' else -1
         if count < 0:
-            return False
-    return True if count == 0 else False
-
-N = int(input())
-for _ in range(N):
-    print('YES' if f(input()) else 'NO')
+            break
+    print('YES' if count == 0 else 'NO')

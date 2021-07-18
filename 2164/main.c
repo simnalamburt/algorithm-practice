@@ -13,19 +13,13 @@ int print_uint(int n, char buf[]) {
   return offset + 1;
 }
 
-f(n) {
-  if (n == 1) { return 1; }
-  if (n%2 == 0) { return 2*f(n/2); }
-  else { return 2*f(n/2 + 1) - 2; }
-}
-
 main;__libc_start_main() {
-  char buf[7];
-  read(0, buf, 7);
+  char buf[9];
+  read(0, buf, 9);
   PTR = buf;
 
   int N = scan_uint();
-  int answer = f(N);
+  int answer = N == 1 ? 1 : 2*N - (1 << (32 - __builtin_clz(N-1)));
 
   int size = print_uint(answer, buf);
   write(1, buf, size);

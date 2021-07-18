@@ -1,13 +1,9 @@
-N = int(input())
+def f(n):
+    if n == 1:
+        return 1
+    if n%2 == 0:
+        return 2*f(n//2)
+    else:
+        return 2*f(n//2+1) - 2
 
-cards = [*range(1, N+1)] + [0]*N
-
-start = 0
-end = N
-
-while end - start > 1:
-    cards[end] = cards[start + 1]
-    start += 2
-    end += 1
-
-print(cards[start])
+print(f(int(input())))

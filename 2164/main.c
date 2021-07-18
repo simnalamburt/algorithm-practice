@@ -13,23 +13,21 @@ int print_uint(int n, char buf[]) {
   return offset + 1;
 }
 
+f(n) {
+  if (n == 1) { return 1; }
+  if (n%2 == 0) { return 2*f(n/2); }
+  else { return 2*f(n/2 + 1) - 2; }
+}
+
 main;__libc_start_main() {
   char buf[7];
   read(0, buf, 7);
   PTR = buf;
 
   int N = scan_uint();
+  int answer = f(N);
 
-  int cards[N*2], start = 0, end = N;
-  for (int i = 0; i < N; ++i) {
-    cards[i] = i + 1;
-  }
-  while (end - start > 1) {
-    cards[end] = cards[start + 1];
-    start += 2;
-    end += 1;
-  }
-
-  write(1, buf, print_uint(cards[start], buf));
+  int size = print_uint(answer, buf);
+  write(1, buf, size);
   _exit(0);
 }

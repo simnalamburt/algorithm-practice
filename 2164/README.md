@@ -48,5 +48,54 @@ Base case:
   C. f(1) = 1
 ```
 
+위 식을 그대로 써도 되지만, 일반해를 구해보자.
+
+먼저 수식 A와 C에 의해, 2의 거듭제곱인 n = 2**m에 대해선 자명하게 f(n) = n이 성립한다. 
+
+그 이외의 경우에 대해선, 작은 n에 대해 f(n)을 몇개 구해보면 아래와 같은데,
+
+n    | 1| 2| 3| 4| 5| 6| 7| 8| 9|10|11|12|13|14|15|16|17|18
+-----|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--
+f(n) | 1| 2| 2| 4| 2| 4| 6| 8| 2| 4| 6| 8|10|12|14|16| 2| 4
+
+2의 거듭제곱수 사이의 숫자들이 증가하는 짝수 정수열을 이루는것을 알 수 있다.
+
+```
+1
+2
+2 4
+2 4 6 8
+2 4 6 8 10 12 14 16
+2 4 5 8 10 12 14 16 18 20 22 24 26 28 30 32
+...
+```
+
+위 패턴을 수식으로 표현하면 아래와 같다.
+
+```
+For all non-negative natural number m, following holds:
+  f(2**m) = 2**m
+  f(2**m + l) = 2l where 0 < l < 2**m
+```
+
+증명은 수학적 귀납법으로 하면 되고 생략하겠다.
+
+임의의 자연수 n을 위 식의 m과 l을 사용한 형태로 표현하면 일반식이 된다.
+
+```
+For all positive natural number n, following holds:
+  n = 2**m + l, m is non-negative natural number, 0 <= l < 2**m
+  f(n) = if l = 0:             n = 2n - 2**m
+         otherwise:  2(n - 2**m) = 2n - 2**(m+1)
+```
+
+이를 아래와 같이 쓰면 if문을 제거할 수 있다.
+
+```
+f(n) = 2n - p
+where p is smallest power of 2 equal or greater than n
+      p = 2**math.ceil(math.log2(n))
+```
+
 ###### Reference
 - https://en.wikipedia.org/wiki/Josephus_problem#k=2

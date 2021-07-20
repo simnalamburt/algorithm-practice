@@ -11,7 +11,7 @@ int scan_uint() {
 int main() { }
 
 int __libc_start_main() {
-  char buf[23005], wbuf[161000];
+  char buf[23005], wbuf[256];
   read(0, buf, 23005);
   PTR = buf;
 
@@ -23,12 +23,14 @@ int __libc_start_main() {
     ++PTR;
     for (char ch; (ch = *PTR++) != '\n';) {
       for (int r = 0; r < R; ++r) {
+        if (I >= 256) { _exit(0); }
         wbuf[I++] = ch;
       }
     }
     wbuf[I++] = '\n';
+    write(1, wbuf, I);
+    I = 0;
   }
 
-  write(1, wbuf, I);
   _exit(0);
 }

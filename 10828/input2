@@ -1,0 +1,8 @@
+7
+pop
+top
+push 123
+top
+pop
+top
+pop

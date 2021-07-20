@@ -23,8 +23,8 @@ int main() { }
 
 struct pair { int x, y; };
 
-int lt(struct pair left, struct pair right) {
-  return left.x < right.x || (left.x == right.x && left.y < right.y);
+int lt(struct pair L[], int l, int r) {
+  return L[l].x < L[r].x || (L[l].x == L[r].x && L[l].y < L[r].y);
 }
 
 void swap(struct pair L[], int i, int j) {
@@ -36,10 +36,9 @@ void swap(struct pair L[], int i, int j) {
 void sort(struct pair L[], int begin, int end) {
   if (end <= begin + 1) { return; }
 
-  struct pair pivot = L[end - 1];
   int a = begin;
   for (int b = begin; b < end - 1; ++b) {
-    if (lt(L[b], pivot)) { swap(L, a++, b); }
+    if (lt(L, b, end - 1)) { swap(L, a++, b); }
   }
   swap(L, a, end - 1);
 

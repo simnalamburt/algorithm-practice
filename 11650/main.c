@@ -21,33 +21,50 @@ int print_int(int n, char buf[]) {
 
 int main() { }
 
+struct pair { int x, y; };
+
+int lt(struct pair left, struct pair right) {
+  return left.x < right.x || (left.x == right.x && left.y < right.y);
+}
+
+void swap(struct pair L[], int i, int j) {
+  struct pair t = L[i];
+  L[i] = L[j];
+  L[j] = t;
+}
+
+void sort(struct pair L[], int begin, int end) {
+  if (end <= begin + 1) { return; }
+
+  struct pair pivot = L[end - 1];
+  int a = begin;
+  for (int b = begin; b < end - 1; ++b) {
+    if (lt(L[b], pivot)) { swap(L, a++, b); }
+  }
+  swap(L, a, end - 1);
+
+  sort(L, begin, a);
+  sort(L, a+1, end);
+}
+
 int __libc_start_main() {
   char buf[1600007];
   read(0, buf, 1600007);
   PTR = buf;
 
   int N = scan_int();
-  int x[N], y[N];
+  struct pair L[N];
   for (int i = 0; i < N; ++i) {
-    x[i] = scan_int();
-    y[i] = scan_int();
+    L[i] = (struct pair){ .x = scan_int(), .y = scan_int() };
   }
 
-  for (int i = 0; i < N; ++i) {
-    for (int j = i + 1; j < N; ++j) {
-      if (x[i] < x[j] || (x[i] == x[j] && y[i] < y[j])) { continue; }
-
-      int tx = x[i], ty = y[i];
-      x[i] = x[j]; y[i] = y[j];
-      x[j] = tx; y[j] = ty;
-    }
-  }
+  sort(L, 0, N);
 
   int I = 0;
   for (int i = 0; i < N; ++i) {
-    I += print_int(x[i], buf + I);
+    I += print_int(L[i].x, buf + I);
     buf[I++] = ' ';
-    I += print_int(y[i], buf + I);
+    I += print_int(L[i].y, buf + I);
     buf[I++] = '\n';
   }
   write(1, buf, I);

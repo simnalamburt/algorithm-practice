@@ -1,35 +1,34 @@
+#include <unistd.h>
+
 char *PTR;
 
-int parse_uint() {
-  int n = 0;
-  for (;;) {
-    char c = *PTR++;
-    if (c < '0') { break; }
-    n = 10*n + c - '0';
-  }
+int scan_uint() {
+  int n = 0, c;
+  while ((c = *PTR++) >= '0') { n = 10*n + c - '0'; }
   return n;
 }
 
-main() {
-  char buffer[23005];
-  read(0, buffer, 23005);
-  PTR = buffer;
+int main() { }
 
-  int N = parse_uint();
+int __libc_start_main() {
+  char buf[23005], wbuf[161000];
+  read(0, buf, 23005);
+  PTR = buf;
 
-  char wbuffer[161000];
-  int i = 0;
+  int N = scan_uint();
+
+  int I = 0;
   for (int _ = 0; _ < N; ++_) {
     int R = *PTR++ - '0';
     ++PTR;
     for (char ch; (ch = *PTR++) != '\n';) {
       for (int r = 0; r < R; ++r) {
-        wbuffer[i++] = ch;
+        wbuf[I++] = ch;
       }
     }
-    wbuffer[i++] = '\n';
+    wbuf[I++] = '\n';
   }
 
-  write(1, wbuffer, i);
+  write(1, wbuf, I);
   _exit(0);
 }

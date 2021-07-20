@@ -1,22 +1,38 @@
 #include <unistd.h>
 
-char *PTR;
+#define BUF_SIZE (1024*64)
+
+char *BUF;
+int C = BUF_SIZE;
+int scan_ch() {
+  if (C == BUF_SIZE) { read(0, BUF, BUF_SIZE); C = 0; }
+  return BUF[C++];
+}
 
 int scan_int() {
   int n = 0, sign = 1, c;
-  while ((c = *PTR++) >= '-') {
+  while ((c = scan_ch()) >= '-') {
     if (c == '-') { sign = -1; }
     else { n = 10*n + c - '0'; }
   }
   return n * sign;
 }
 
-int print_int(int n, char buf[]) {
-  if (n < 0) { *buf = '-'; return print_int(-n, buf+1) + 1; }
-  int offset = 0;
-  if (n/10) { offset += print_int(n/10, buf); }
-  buf[offset] = '0' + n%10;
-  return offset + 1;
+int W = 0;
+void flush() {
+  write(1, BUF, W);
+  W = 0;
+}
+
+void print_ch(int ch) {
+  if (W == BUF_SIZE) { flush(); }
+  BUF[W++] = ch;
+}
+
+void print_int(int n) {
+  if (n < 0) { print_ch('-'); print_int(-n); return; }
+  if (n/10) { print_int(n/10); }
+  print_ch('0' + n%10);
 }
 
 int main() { }
@@ -47,9 +63,8 @@ void sort(struct pair L[], int begin, int end) {
 }
 
 int __libc_start_main() {
-  char buf[1600007];
-  read(0, buf, 1600007);
-  PTR = buf;
+  char buf[BUF_SIZE];
+  BUF = buf;
 
   int N = scan_int();
   struct pair L[N];
@@ -59,14 +74,12 @@ int __libc_start_main() {
 
   sort(L, 0, N);
 
-  int I = 0;
   for (int i = 0; i < N; ++i) {
-    I += print_int(L[i].x, buf + I);
-    buf[I++] = ' ';
-    I += print_int(L[i].y, buf + I);
-    buf[I++] = '\n';
+    print_int(L[i].x);
+    print_ch(' ');
+    print_int(L[i].y);
+    print_ch('\n');
   }
-  write(1, buf, I);
-
+  flush();
   _exit(0);
 }

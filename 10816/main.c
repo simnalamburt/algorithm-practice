@@ -7,12 +7,20 @@
 char *BUF;
 int scan_int() {
   static int C = 0;
-  int n = 0, sign = 1, c;
-  while ((c = BUF[C++]) >= '-') {
-    if (c == '-') { sign = -1; }
-    else { n = 10*n + c - '0'; }
+  int n = 0, sign = 1;
+  for (;;) {
+    int c = BUF[C++];
+    switch (c) {
+      case ' ':
+      case '\n':
+        return n * sign;
+      case '-':
+        sign = -1;
+        break;
+      default:
+        n = 10*n + c - '0';
+    }
   }
-  return n * sign;
 }
 
 char WBUF[1024*1024*4];
@@ -43,12 +51,10 @@ int __libc_start_main() {
     ++count[10000000 + scan_int()];
   }
   int M = scan_int();
-  print_uint(count[10000000 + scan_int()]);
-  for (int i = 1; i < M; ++i) {
-    WBUF[W++] = ' ';
+  for (int i = 0; i < M; ++i) {
     print_uint(count[10000000 + scan_int()]);
+    WBUF[W++] = ' ';
   }
-  WBUF[W++] = '\n';
 
   write(1, WBUF, W);
   _exit(0);

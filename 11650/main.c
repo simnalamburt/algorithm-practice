@@ -1,6 +1,8 @@
+#pragma GCC optimize("O3")
+#pragma GCC target("arch=haswell")
 #include <unistd.h>
 
-#define BUF_SIZE (1024*64)
+#define BUF_SIZE (1024*100)
 
 char *BUF;
 int C = BUF_SIZE;

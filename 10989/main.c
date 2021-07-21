@@ -5,7 +5,7 @@
 #define BUF_SIZE (1024 * 4)
 #define WBUF_SIZE (1024 * 4)
 
-char *BUF;
+char BUF[BUF_SIZE];
 char scan_ch() {
   static int I = BUF_SIZE;
   if (I == BUF_SIZE) { read(0, BUF, BUF_SIZE); I = 0; }
@@ -21,7 +21,7 @@ int scan_uint() {
   }
 }
 
-char *WBUF;
+char WBUF[WBUF_SIZE];
 int W = 0;
 void flush() {
   write(1, WBUF, W);
@@ -40,13 +40,11 @@ void print_uint(int n) {
 
 int main() { }
 
-int __libc_start_main() {
-  char buf[BUF_SIZE], wbuf[WBUF_SIZE];
-  BUF = buf, WBUF = wbuf;
+int count[10001];
 
+int __libc_start_main() {
   // main
   int N = scan_uint();
-  int count[10001] = {0};
   for (int i = 0; i < N; ++i) {
     ++count[scan_uint()];
   }

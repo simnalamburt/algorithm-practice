@@ -6,25 +6,29 @@
 
 #define BUF_SIZE (1024 * 1024 * 6)
 
-char BUF[BUF_SIZE];
-char scan_ch() {
-  static int I = BUF_SIZE;
-  if (I == BUF_SIZE) { read(0, BUF, BUF_SIZE); I = 0; }
-  return BUF[I++];
+static char BUF[BUF_SIZE];
+static int I = BUF_SIZE;
+inline static void try_buffer() {
+  int remain = BUF_SIZE - I;
+  if (__builtin_expect(10 < remain, 1)) { return; }
+  for (int i = 0; i < remain; ++i) { BUF[i] = BUF[I + i]; }
+  read(0, BUF + remain, BUF_SIZE - remain);
+  I = 0;
 }
 
-int scan_uint() {
+inline static int scan_uint() {
+  try_buffer();
   int n = 0;
   for (int i = 0; i < 9; ++i) {
-    int ch = scan_ch();
+    int ch = BUF[I++];
     if (ch < '0') { break; }
     n = 10*n + ch - '0';
   }
   return n;
 }
 
-int W = 0;
-inline void try_flush() {
+static int W = 0;
+inline static void try_flush() {
   if (__builtin_expect(W + 10 < BUF_SIZE, 1)) { return; }
   write(1, BUF, W);
   W = 0;
@@ -32,7 +36,7 @@ inline void try_flush() {
 
 int main() { }
 
-int count[10001];
+static int count[10001];
 
 int __libc_start_main() {
   // main

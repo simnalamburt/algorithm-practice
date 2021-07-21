@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 #define BUF_SIZE (1024 * 1024)
-#define WBUF_SIZE (1024 * 1024)
 
 char BUF[BUF_SIZE];
 char scan_ch() {
@@ -22,16 +21,15 @@ int scan_uint() {
   }
 }
 
-char WBUF[WBUF_SIZE];
 int W = 0;
 void flush() {
-  write(1, WBUF, W);
+  write(1, BUF, W);
   W = 0;
 }
 
 void print_ch(char ch) {
-  if (W == WBUF_SIZE) { flush(); }
-  WBUF[W++] = ch;
+  if (W == BUF_SIZE) { flush(); }
+  BUF[W++] = ch;
 }
 
 void print_uint(int n) {

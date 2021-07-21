@@ -1,39 +1,48 @@
 #pragma GCC optimize("O3")
 #pragma GCC target("arch=haswell")
 #include <unistd.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
+
+#define BUF_SIZE (1024 * 4)
+#define WBUF_SIZE (1024 * 4)
 
 char *BUF;
-int I;
+char scan_ch() {
+  static int I = BUF_SIZE;
+  if (I == BUF_SIZE) { read(0, BUF, BUF_SIZE); I = 0; }
+  return BUF[I++];
+}
+
 int scan_uint() {
   int n = 0;
   for (;;) {
-    int ch = BUF[I++];
+    int ch = scan_ch();
     if (ch < '0') { return n; }
     n = 10*n + ch - '0';
   }
 }
 
 char *WBUF;
-int W;
+int W = 0;
+void flush() {
+  write(1, WBUF, W);
+  W = 0;
+}
+
+void print_ch(char ch) {
+  if (W == WBUF_SIZE) { flush(); }
+  WBUF[W++] = ch;
+}
+
 void print_uint(int n) {
   if (n >= 10) { print_uint(n/10); }
-  WBUF[W++] = n%10 + '0';
+  print_ch(n%10 + '0');
 }
 
 int main() { }
 
 int __libc_start_main() {
-  // stdin 길이 측정
-  struct stat stat;
-  const int ret = fstat(0, &stat);
-  if (ret != 0) { _exit(-1); }
-  const off_t file_size = stat.st_size;
-
-  // stdin mmap 수행
-  BUF = WBUF = mmap(NULL, file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE, 0, 0);
-  if (BUF == MAP_FAILED) { _exit(-1); }
+  char buf[BUF_SIZE], wbuf[WBUF_SIZE];
+  BUF = buf, WBUF = wbuf;
 
   // main
   int N = scan_uint();
@@ -45,10 +54,10 @@ int __libc_start_main() {
     int repeat = count[i];
     for (int j = 0; j < repeat; ++j) {
       print_uint(i);
-      WBUF[W++] = '\n';
+      print_ch('\n');
     }
   }
 
-  write(1, WBUF, W);
+  flush();
   _exit(0);
 }

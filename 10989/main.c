@@ -24,8 +24,8 @@ int scan_uint() {
 }
 
 int W = 0;
-void try_flush() {
-  if (W + 10 < BUF_SIZE) { return; }
+inline void try_flush() {
+  if (__builtin_expect(W + 10 < BUF_SIZE, 1)) { return; }
   write(1, BUF, W);
   W = 0;
 }

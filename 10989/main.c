@@ -24,14 +24,10 @@ int scan_uint() {
 }
 
 int W = 0;
-void flush() {
+void try_flush() {
+  if (W + 10 < BUF_SIZE) { return; }
   write(1, BUF, W);
   W = 0;
-}
-
-void print_ch(char ch) {
-  if (W == BUF_SIZE) { flush(); }
-  BUF[W++] = ch;
 }
 
 int main() { }
@@ -49,47 +45,52 @@ int __libc_start_main() {
   // 1 digit
   for (; i < 10; ++i) {
     for (int j = 0; j < count[i]; ++j) {
-      print_ch('0' + i);
-      print_ch('\n');
+      BUF[W++] = '0' + i;
+      BUF[W++] = '\n';
+      try_flush();
     }
   }
   // 2 digit
   for (; i < 100; ++i) {
     for (int j = 0; j < count[i]; ++j) {
-      print_ch('0' + i/10);
-      print_ch('0' + i%10);
-      print_ch('\n');
+      BUF[W++] = '0' + i/10;
+      BUF[W++] = '0' + i%10;
+      BUF[W++] = '\n';
+      try_flush();
     }
   }
   // 3 digit
   for (; i < 1000; ++i) {
     for (int j = 0; j < count[i]; ++j) {
-      print_ch('0' + i/100);
-      print_ch('0' + i/10%10);
-      print_ch('0' + i%10);
-      print_ch('\n');
+      BUF[W++] = '0' + i/100;
+      BUF[W++] = '0' + i/10%10;
+      BUF[W++] = '0' + i%10;
+      BUF[W++] = '\n';
+      try_flush();
     }
   }
   // 4 digit
   for (; i < 10000; ++i) {
     for (int j = 0; j < count[i]; ++j) {
-      print_ch('0' + i/1000);
-      print_ch('0' + i/100%10);
-      print_ch('0' + i/10%10);
-      print_ch('0' + i%10);
-      print_ch('\n');
+      BUF[W++] = '0' + i/1000;
+      BUF[W++] = '0' + i/100%10;
+      BUF[W++] = '0' + i/10%10;
+      BUF[W++] = '0' + i%10;
+      BUF[W++] = '\n';
+      try_flush();
     }
   }
   // 10000
   for (int j = 0; j < count[10000]; ++j) {
-    print_ch('1');
-    print_ch('0');
-    print_ch('0');
-    print_ch('0');
-    print_ch('0');
-    print_ch('\n');
+    BUF[W++] = '1';
+    BUF[W++] = '0';
+    BUF[W++] = '0';
+    BUF[W++] = '0';
+    BUF[W++] = '0';
+    BUF[W++] = '\n';
+    try_flush();
   }
 
-  flush();
+  write(1, BUF, W);
   _exit(0);
 }

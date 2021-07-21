@@ -1,9 +1,6 @@
-#pragma GCC optimize("O3")
-#pragma GCC optimize("unroll-loops")
-#pragma GCC target("arch=haswell")
 #include <unistd.h>
 
-#define BUF_SIZE (1024 * 1024)
+#define BUF_SIZE (1024 * 1024 * 6)
 
 char BUF[BUF_SIZE];
 char scan_ch() {
@@ -32,11 +29,6 @@ void print_ch(char ch) {
   BUF[W++] = ch;
 }
 
-void print_uint(int n) {
-  if (n >= 10) { print_uint(n/10); }
-  print_ch(n%10 + '0');
-}
-
 int main() { }
 
 int count[10001];
@@ -47,12 +39,50 @@ int __libc_start_main() {
   for (int i = 0; i < N; ++i) {
     ++count[scan_uint()];
   }
-  for (int i = 0; i < 10001; ++i) {
-    int repeat = count[i];
-    for (int j = 0; j < repeat; ++j) {
-      print_uint(i);
+
+  int i = 0;
+  // 1 digit
+  for (; i < 10; ++i) {
+    for (int j = 0; j < count[i]; ++j) {
+      print_ch('0' + i);
       print_ch('\n');
     }
+  }
+  // 2 digit
+  for (; i < 100; ++i) {
+    for (int j = 0; j < count[i]; ++j) {
+      print_ch('0' + i/10);
+      print_ch('0' + i%10);
+      print_ch('\n');
+    }
+  }
+  // 3 digit
+  for (; i < 1000; ++i) {
+    for (int j = 0; j < count[i]; ++j) {
+      print_ch('0' + i/100);
+      print_ch('0' + i/10%10);
+      print_ch('0' + i%10);
+      print_ch('\n');
+    }
+  }
+  // 4 digit
+  for (; i < 10000; ++i) {
+    for (int j = 0; j < count[i]; ++j) {
+      print_ch('0' + i/1000);
+      print_ch('0' + i/100%10);
+      print_ch('0' + i/10%10);
+      print_ch('0' + i%10);
+      print_ch('\n');
+    }
+  }
+  // 10000
+  for (int j = 0; j < count[10000]; ++j) {
+    print_ch('1');
+    print_ch('0');
+    print_ch('0');
+    print_ch('0');
+    print_ch('0');
+    print_ch('\n');
   }
 
   flush();

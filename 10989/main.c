@@ -1,9 +1,10 @@
 #pragma GCC optimize("O3")
+#pragma GCC optimize("unroll-loops")
 #pragma GCC target("arch=haswell")
 #include <unistd.h>
 
-#define BUF_SIZE (1024 * 4)
-#define WBUF_SIZE (1024 * 4)
+#define BUF_SIZE (1024 * 1024)
+#define WBUF_SIZE (1024 * 1024)
 
 char BUF[BUF_SIZE];
 char scan_ch() {

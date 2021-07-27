@@ -10,7 +10,7 @@ int scan_uint() {
 
 char WBUF[538468];
 int W = 0;
-void print_uint(int n) {
+inline static void print_uint(int n) {
   if (n/10) { print_uint(n/10); }
   WBUF[W++] = '0' + n%10;
 }
@@ -18,13 +18,13 @@ void print_uint(int n) {
 int main() {
   read(0, BUF, sizeof BUF);
 
-  int M = scan_uint(), N = scan_uint(), L = N+1;
+  int M = scan_uint(), L = scan_uint() + 1;
   _Bool sieve[L];
   sieve[0] = sieve[1] = 0;
   for (int i = 2; i < L; ++i) { sieve[i] = 1; }
-  for (int i = 2; i < L; ++i) {
+  for (int i = 2; i*i < L; ++i) {
     if (!sieve[i]) { continue; }
-    for (int j = i*2; j < L; j += i) { sieve[j] = 0; }
+    for (int j = i*i; j < L; j += i) { sieve[j] = 0; }
   }
   for (int i = M; i < L; ++i) {
     if (!sieve[i]) { continue; }

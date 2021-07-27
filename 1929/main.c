@@ -13,11 +13,17 @@ int scan_uint() {
   return n;
 }
 
-char WBUF[538468];
+char WBUF[1024*64];
 int W = 0;
 inline static void print_uint(int n) {
   if (n/10) { print_uint(n/10); }
   WBUF[W++] = '0' + n%10;
+}
+
+inline static void try_flush() {
+  if (W + 15 < 1024*64) { return; }
+  write(1, WBUF, W);
+  W = 0;
 }
 
 inline static _Bool nth(u8 bitset[], int n) {
@@ -30,7 +36,8 @@ inline static void set(u8 bitset[], int n) {
 
 u8 I_SIEVE[125001] = { 3 };
 
-main;__libc_start_main() {
+int main() { }
+int __libc_start_main() {
   char buf[16];
   BUF = buf;
   read(0, buf, 16);
@@ -42,6 +49,7 @@ main;__libc_start_main() {
   }
   for (int i = M; i < L; ++i) {
     if (likely(nth(I_SIEVE, i))) { continue; }
+    try_flush();
     print_uint(i);
     WBUF[W++] = '\n';
   }

@@ -1,4 +1,5 @@
 #include <unistd.h>
+typedef unsigned long u64;
 
 char BUF[1600007];
 int scan_int() {
@@ -19,26 +20,20 @@ void print_int(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
-struct pair { int x, y; } list[100000];
-
-_Bool lte(struct pair l, struct pair r) {
-  return l.y != r.y ? l.y <= r.y : l.x <= r.x;
-}
-
-void swap(struct pair list[], int a, int b) {
-  struct pair t = list[a];
+inline static void swap(u64 list[], int a, int b) {
+  u64 t = list[a];
   list[a] = list[b];
   list[b] = t;
 }
 
-void quicksort(struct pair list[], int begin, int end) {
+void quicksort(u64 list[], int begin, int end) {
   if (end <= begin + 1) { return; }
 
-  struct pair pivot = list[end - 1];
+  u64 pivot = list[end - 1];
   int l = begin, r = end - 1;
   // Loop invariant: list[begin:l] <= pivot < list[r:end-1]
   while (l < r) {
-    if (lte(list[l], pivot)) { ++l; continue; }
+    if (list[l] <= pivot) { ++l; continue; }
     swap(list, l, --r);
   }
   // Invariant: l == r
@@ -48,19 +43,22 @@ void quicksort(struct pair list[], int begin, int end) {
   quicksort(list, l + 1, end);
 }
 
+u64 list[100000];
+
 int main() { }
 int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
   int N = scan_int();
   for (int i = 0; i < N; ++i) {
-    list[i] = (struct pair) { .x = scan_int(), .y = scan_int() };
+    u64 x = scan_int() + 100000, y = scan_int() + 100000;
+    list[i] = x | (y << 32ul);
   }
   quicksort(list, 0, N);
   for (int i = 0; i < N; ++i) {
-    print_int(list[i].x);
+    print_int((int)list[i] - 100000);
     WBUF[W++] = ' ';
-    print_int(list[i].y);
+    print_int((int)(list[i] >> 32ul) - 100000);
     WBUF[W++] = '\n';
   }
 

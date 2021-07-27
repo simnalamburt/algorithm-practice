@@ -1,10 +1,11 @@
 #pragma GCC optimize("O4")
 #pragma GCC target("arch=haswell")
 #define likely(x) __builtin_expect((x), 1)
-
 #include <unistd.h>
 
-char BUF[16];
+typedef __uint8_t u8;
+
+char *BUF;
 int scan_uint() {
   static int C = 0;
   int n = 0, c;
@@ -19,27 +20,28 @@ inline static void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
-inline static _Bool nth(__uint8_t bitset[], int n) {
+inline static _Bool nth(u8 bitset[], int n) {
   return bitset[n/8] & (1 << (n%8));
 }
 
-inline static void set(__uint8_t bitset[], int n) {
+inline static void set(u8 bitset[], int n) {
   bitset[n/8] |= 1 << (n%8);
 }
 
-int main() {
-  read(0, BUF, sizeof BUF);
+u8 I_SIEVE[125001] = { 3 };
+
+main;__libc_start_main() {
+  char buf[16];
+  BUF = buf;
+  read(0, buf, 16);
 
   int M = scan_uint(), L = scan_uint() + 1;
-  __uint8_t inverted_sieve[L/8 + 1];
-  inverted_sieve[0] = 3;
-  for (int i = 1; i < L/8 + 1; ++i) { inverted_sieve[i] = 0; }
   for (int i = 2; i*i < L; ++i) {
-    if (likely(nth(inverted_sieve, i))) { continue; }
-    for (int j = i*i; j < L; j += i) { set(inverted_sieve, j); }
+    if (likely(nth(I_SIEVE, i))) { continue; }
+    for (int j = i*i; j < L; j += i) { set(I_SIEVE, j); }
   }
   for (int i = M; i < L; ++i) {
-    if (likely(nth(inverted_sieve, i))) { continue; }
+    if (likely(nth(I_SIEVE, i))) { continue; }
     print_uint(i);
     WBUF[W++] = '\n';
   }

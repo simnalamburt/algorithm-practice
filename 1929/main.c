@@ -15,19 +15,27 @@ inline static void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
+inline static _Bool nth(__uint8_t bitset[], int n) {
+  return bitset[n/8] & (1 << (n%8));
+}
+
+inline static void unset(__uint8_t bitset[], int n) {
+  bitset[n/8] &= ~(1 << (n%8));
+}
+
 int main() {
   read(0, BUF, sizeof BUF);
 
   int M = scan_uint(), L = scan_uint() + 1;
-  _Bool sieve[L];
-  sieve[0] = sieve[1] = 0;
-  for (int i = 2; i < L; ++i) { sieve[i] = 1; }
+  __uint8_t sieve[L/8 + 1];
+  sieve[0] = 0b11111100;
+  for (int i = 1; i < L/8 + 1; ++i) { sieve[i] = 0b11111111; }
   for (int i = 2; i*i < L; ++i) {
-    if (!sieve[i]) { continue; }
-    for (int j = i*i; j < L; j += i) { sieve[j] = 0; }
+    if (!nth(sieve, i)) { continue; }
+    for (int j = i*i; j < L; j += i) { unset(sieve, j); }
   }
   for (int i = M; i < L; ++i) {
-    if (!sieve[i]) { continue; }
+    if (!nth(sieve, i)) { continue; }
     print_uint(i);
     WBUF[W++] = '\n';
   }

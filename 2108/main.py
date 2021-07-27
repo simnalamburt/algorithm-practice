@@ -24,7 +24,9 @@ for i, count in enumerate(CTR):
         median = i - 4000
         break
 
-mode = max(range(8001), key=lambda n:CTR[n]) - 4000
+freq = max(CTR)
+modes = sorted(i - 4000 for i in range(8001) if CTR[i] == freq)
+mode = modes[1] if len(modes) > 1 else modes[0]
 RANGE = MAX - MIN
 
 print(mean)

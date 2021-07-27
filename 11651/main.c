@@ -1,3 +1,5 @@
+#pragma GCC optimize("O4")
+#pragma GCC target("arch=haswell")
 #include <unistd.h>
 typedef unsigned long u64;
 
@@ -43,13 +45,13 @@ void quicksort(u64 list[], int begin, int end) {
   quicksort(list, l + 1, end);
 }
 
-u64 list[100000];
 
 int main() { }
 int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
   int N = scan_int();
+  u64 list[N];
   for (int i = 0; i < N; ++i) {
     u64 x = scan_int() + 100000, y = scan_int() + 100000;
     list[i] = x | (y << 32ul);

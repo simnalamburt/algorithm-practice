@@ -1,3 +1,7 @@
+#pragma GCC optimize("O4")
+#pragma GCC target("arch=haswell")
+#define likely(x) __builtin_expect((x), 1)
+
 #include <unistd.h>
 
 char BUF[16];
@@ -31,11 +35,11 @@ int main() {
   inverted_sieve[0] = 3;
   for (int i = 1; i < L/8 + 1; ++i) { inverted_sieve[i] = 0; }
   for (int i = 2; i*i < L; ++i) {
-    if (nth(inverted_sieve, i)) { continue; }
+    if (likely(nth(inverted_sieve, i))) { continue; }
     for (int j = i*i; j < L; j += i) { set(inverted_sieve, j); }
   }
   for (int i = M; i < L; ++i) {
-    if (nth(inverted_sieve, i)) { continue; }
+    if (likely(nth(inverted_sieve, i))) { continue; }
     print_uint(i);
     WBUF[W++] = '\n';
   }

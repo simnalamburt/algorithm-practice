@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euo pipefail; IFS=$'\n\t'
+
+gcc -O4 -Wextra -Wall -Wpedantic     main.c  -o main
+gcc -O4 -Wextra -Wall -Wpedantic -lm naive.c -o naive
+cmp <(./main < input1) <(./naive < input1)
+cmp <(./main < input2) <(./naive < input2)
+cmp <(./main < input3) <(./naive < input3)
+
+for ((;;)); do
+  ./gen > .generated
+  cmp <(./main < .generated) <(./naive < .generated)
+  echo 'OK'
+done

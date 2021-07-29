@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-char BUF[1024 * 16], WBUF[1024 * 16];
+char BUF[1024 * 8], WBUF[1024 * 2];
 int C = sizeof BUF, W = 0;
 
 char scan_ch() {
@@ -39,6 +39,8 @@ int main() { }
 int __libc_start_main() {
   for (;;) {
     if (BUF[C] == '.' && BUF[C+1] == '\n') { break; }
+
+    if (W + 4 >= sizeof WBUF) { write(1, WBUF, W); W = 0; }
     if (solve()) {
       WBUF[W++] = 'y';
       WBUF[W++] = 'e';

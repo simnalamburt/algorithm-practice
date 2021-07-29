@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-char BUF[1024 * 1024 * 16], WBUF[1024 * 1024 * 16];
+char BUF[1024 * 512];
 int C = 0, W = 0;
 
 _Bool solve() {
@@ -37,17 +37,18 @@ int __libc_start_main() {
   for (;;) {
     if (BUF[C] == '.' && BUF[C+1] == '\n') { break; }
     if (solve()) {
-      WBUF[W++] = 'y';
-      WBUF[W++] = 'e';
-      WBUF[W++] = 's';
-      WBUF[W++] = '\n';
+      BUF[W++] = 'y';
+      BUF[W++] = 'e';
+      BUF[W++] = 's';
+      BUF[W++] = '\n';
     } else {
-      WBUF[W++] = 'n';
-      WBUF[W++] = 'o';
-      WBUF[W++] = '\n';
+      BUF[W++] = 'n';
+      BUF[W++] = 'o';
+      BUF[W++] = '\n';
     }
   }
 
-  write(1, WBUF, W);
+  // WBUF와 BUF가 쓰는 영역이 겹치지 않는다는 가정이 들어가있음
+  write(1, BUF, W);
   _exit(0);
 }

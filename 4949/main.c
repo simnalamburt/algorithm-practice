@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-char BUF[1024 * 256], WBUF[1024 * 512];
+char BUF[1024 * 16], WBUF[1024 * 16];
 int C = sizeof BUF, W = 0;
 
 char scan_ch() {

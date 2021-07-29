@@ -19,18 +19,18 @@ void print_int(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
-int ctr[8001];
+int buf[8001];
 
 int main() { }
 int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
-  int N = scan_int(), sum = 0, min = 4001, max = -4001;
+  int N = scan_int(), sum = 0, min = 4001, max = -4001, *freq = &buf[4000];
   for (int i = 0; i < N; ++i) {
     int n = scan_int();
 
     sum += n;
-    ++ctr[n+4000];
+    ++freq[n];
     if (n < min) { min = n; }
     if (max < n) { max = n; }
   }
@@ -39,34 +39,28 @@ int __libc_start_main() {
   int mean = meanf > 0.0 ? (int)(meanf + 0.5) : (int)(meanf - 0.5);
 
   int median = 4001, remain = N/2;
-  for (int i = 0; i < 8001; ++i) {
-    remain -= ctr[i];
+  for (int i = -4000; i <= 4000; ++i) {
+    remain -= freq[i];
     if (remain < 0) {
-      median = i - 4000;
+      median = i;
       break;
     }
   }
 
   int max_freq = 0;
-  for (int i = 0; i < 8001; ++i) {
-    if (max_freq < ctr[i]) {
-      max_freq = ctr[i];
+  for (int i = -4000; i <= 4000; ++i) {
+    if (max_freq < freq[i]) {
+      max_freq = freq[i];
     }
   }
-
   int mode1 = 4001, mode2 = 4001;
-  for (int i = 1; i < 8001; ++i) {
-    if (max_freq != ctr[i]) { continue; }
-
-    if (mode1 == 4001) {
-      mode1 = i - 4000;
-    } else {
-      mode2 = i - 4000;
-      break;
-    }
+  for (int i = -4000; i <= 4000; ++i) {
+    if (freq[i] != max_freq) { continue; }
+    if (mode1 == 4001) { mode1 = i; }
+    else { mode2 = i; break; }
   }
-  int mode = mode2 == 4001 ? mode1 : mode2;
 
+  int mode = mode2 == 4001 ? mode1 : mode2;
   int range = max - min;
 
   print_int(mean);

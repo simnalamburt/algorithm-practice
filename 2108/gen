@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+from sys import argv
+from random import seed, randint
+
+if len(argv) == 2:
+    N = int(argv[1])
+    seed(N)
+else:
+    N = randint(1, 500_000)
+
+print(str(N) + '\n' + '\n'.join(str(randint(-4000, 4000)) for _ in range(N)))

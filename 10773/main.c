@@ -1,10 +1,15 @@
 #include <unistd.h>
+#define BUF_SIZE (1024*16)
 
 char *BUF;
+int scan_ch() {
+  static int C = BUF_SIZE;
+  if (C >= BUF_SIZE) { read(0, BUF, BUF_SIZE); C = 0; }
+  return BUF[C++];
+}
 int scan_uint() {
-  static int C = 0;
   int n = 0, c;
-  while ((c = BUF[C++]) >= '-') { n = 10*n + c - '0'; }
+  while ((c = scan_ch()) >= '-') { n = 10*n + c - '0'; }
   return n;
 }
 
@@ -17,9 +22,8 @@ void print_uint(int n) {
 
 int main() { }
 int __libc_start_main() {
-  char buf[400000];
+  char buf[BUF_SIZE];
   BUF = WBUF = buf;
-  read(0, buf, 400000);
 
   int N = scan_uint();
 

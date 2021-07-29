@@ -35,7 +35,8 @@ int __libc_start_main() {
     if (max < n) { max = n; }
   }
 
-  int mean = (int)((double)sum/(double)N + 0.5);
+  double meanf = (double)sum/(double)N;
+  int mean = meanf > 0.0 ? (int)(meanf + 0.5) : (int)(meanf - 0.5);
 
   int median = 4001, remain = N/2;
   for (int i = 0; i < 8001; ++i) {

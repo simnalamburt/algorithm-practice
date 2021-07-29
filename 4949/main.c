@@ -1,8 +1,6 @@
-#include <unistd.h>
 #define BUF_SIZE (1024*8)
-#define WBUF_SIZE (1024*2)
 
-char BUF[BUF_SIZE], WBUF[WBUF_SIZE];
+char *BUF, WBUF[1024*2];
 int C = BUF_SIZE, W = 0;
 
 char scan_ch() {
@@ -15,21 +13,13 @@ _Bool solve() {
   int top = 0;
   for (;;) {
     char ch = scan_ch();
-    switch (ch) {
-      case '(':
-      case '[':
-        stack[top++] = ch;
-        break;
-      case ')':
-        if (top <= 0 || stack[top-1] != '(') { goto FAILED; }
-        --top;
-        break;
-      case ']':
-        if (top <= 0 || stack[top-1] != '[') { goto FAILED; }
-        --top;
-        break;
-      case '\n':
-        return top == 0;
+    if (ch == '(' || ch == '[') {
+      stack[top++] = ch;
+    } else if (ch == ')' || ch == ']') {
+      if (top <= 0 || stack[top-1] != (ch == ')' ? '(' : '[')) { goto FAILED; }
+      --top;
+    } else if (ch == '\n') {
+      return top == 0;
     }
   }
 FAILED:
@@ -37,22 +27,17 @@ FAILED:
   return 0;
 }
 
-int main() { }
-int __libc_start_main() {
+main;__libc_start_main() {
+  char buf[BUF_SIZE];
+  BUF = buf;
+
   for (;;) {
     if (BUF[C] == '.' && BUF[C+1] == '\n') { break; }
 
-    if (W + 4 >= WBUF_SIZE) { write(1, WBUF, W); W = 0; }
-    if (solve()) {
-      WBUF[W++] = 'y';
-      WBUF[W++] = 'e';
-      WBUF[W++] = 's';
-      WBUF[W++] = '\n';
-    } else {
-      WBUF[W++] = 'n';
-      WBUF[W++] = 'o';
-      WBUF[W++] = '\n';
-    }
+    if (W + 4 >= sizeof WBUF) { write(1, WBUF, W); W = 0; }
+    _Bool a = solve();
+    *(int*)(WBUF+W) = a ? 175334777 : 683886;
+    W += a ? 4 : 3;
   }
 
   write(1, WBUF, W);

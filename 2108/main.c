@@ -25,14 +25,14 @@ int main() { }
 int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
-  int N = scan_int(), sum = 0, min = 4000, max = -4000;
+  int N = scan_int(), sum = 0, min = 4001, max = -4001;
   for (int i = 0; i < N; ++i) {
     int n = scan_int();
 
     sum += n;
     ++ctr[n+4000];
     if (n < min) { min = n; }
-    else if (max < n) { max = n; }
+    if (max < n) { max = n; }
   }
 
   int mean = (int)((double)sum/(double)N + 0.5);

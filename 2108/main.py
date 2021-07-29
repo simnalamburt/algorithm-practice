@@ -2,8 +2,8 @@ N = int(input())
 
 SUM = 0
 CTR = [0]*8001
-MIN = 4000
-MAX = -4000
+MIN = 4001
+MAX = -4001
 
 for _ in range(N):
     n = int(input())
@@ -12,7 +12,7 @@ for _ in range(N):
     CTR[n+4000] += 1
     if n < MIN:
         MIN = n
-    elif MAX < n:
+    if MAX < n:
         MAX = n
 
 mean = round(SUM/N)

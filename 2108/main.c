@@ -1,3 +1,5 @@
+#pragma GCC optimize("O4,unroll-loops")
+#pragma GCC target("arch=haswell")
 #include <unistd.h>
 
 char BUF[3000007];
@@ -35,8 +37,8 @@ int __libc_start_main() {
     if (max < n) { max = n; }
   }
 
-  double meanf = (double)sum/(double)N;
-  int mean = meanf > 0.0 ? (int)(meanf + 0.5) : (int)(meanf - 0.5);
+  double mean = (double)sum/(double)N;
+  int rounded_mean = mean + (mean > 0.0 ? 0.5 : -0.5);
 
   int median = 4001, remain = N/2;
   for (int i = -4000; i <= 4000; ++i) {
@@ -47,23 +49,22 @@ int __libc_start_main() {
     }
   }
 
-  int max_freq = 0;
+  int max_freq = 0, mode1 = 4001, mode2 = 4001;
   for (int i = -4000; i <= 4000; ++i) {
     if (max_freq < freq[i]) {
       max_freq = freq[i];
     }
   }
-  int mode1 = 4001, mode2 = 4001;
   for (int i = -4000; i <= 4000; ++i) {
     if (freq[i] != max_freq) { continue; }
     if (mode1 == 4001) { mode1 = i; }
     else { mode2 = i; break; }
   }
-
   int mode = mode2 == 4001 ? mode1 : mode2;
+
   int range = max - min;
 
-  print_int(mean);
+  print_int(rounded_mean);
   WBUF[W++] = '\n';
   print_int(median);
   WBUF[W++] = '\n';
@@ -71,7 +72,6 @@ int __libc_start_main() {
   WBUF[W++] = '\n';
   print_int(range);
   WBUF[W++] = '\n';
-
   write(1, WBUF, W);
   _exit(0);
 }

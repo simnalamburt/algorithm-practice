@@ -1,8 +1,10 @@
 #pragma GCC optimize("O4,unroll-loops")
 #pragma GCC target("arch=haswell")
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
 
-static char BUF[1024 * 1024 * 20];
+static char *BUF;
 static int scan_uint() {
   static int C = 0;
   int n = 0, c;
@@ -18,7 +20,13 @@ static void print_uint(int n) {
 }
 
 int main() {
-  read(0, BUF, sizeof BUF);
+  // stdin 길이 측정
+  struct stat stat;
+  if (fstat(0, &stat) != 0) { _exit(-1); }
+  // stdin mmap 수행
+  BUF = mmap(NULL, stat.st_size, PROT_READ, MAP_PRIVATE, 0, 0);
+  if (BUF == MAP_FAILED) { _exit(-1); }
+
 
   int N = scan_uint();
   long M = scan_uint(), trees[N];

@@ -10,7 +10,8 @@ int scan_uint() {
 
 int stack[100000];
 
-int main() {
+int main() { }
+int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
   int n = scan_uint(), stack_len = 0, upcoming = 1, W = 0;

@@ -1,6 +1,6 @@
 #include <unistd.h>
 
-char *BUF;
+char BUF[588902], WBUF[400000];
 int scan_uint() {
   static int C = 0;
   int n = 0, c;
@@ -8,14 +8,12 @@ int scan_uint() {
   return n;
 }
 
+int stack[100000];
+
 int main() {
-  char buf[588902];
-  BUF = buf;
-  read(0, buf, sizeof buf);
+  read(0, BUF, sizeof BUF);
 
-  int n = scan_uint(), stack[n], stack_len = 0, upcoming = 1;
-  char WBUF[n*4]; int W = 0;
-
+  int n = scan_uint(), stack_len = 0, upcoming = 1, W = 0;
   for (int _ = 0; _ < n; ++_) {
     int X = scan_uint();
     while (X >= upcoming) {

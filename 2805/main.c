@@ -12,7 +12,7 @@ static int scan_uint() {
   return n;
 }
 
-static char WBUF[64];
+static char WBUF[11];
 static int W = 0;
 static void print_uint(int n) {
   if (n/10) { print_uint(n/10); }
@@ -32,7 +32,8 @@ int main() {
   long M = scan_uint(), trees[N];
   for (int i = 0; i < N; ++i) { trees[i] = scan_uint(); }
 
-  long lo = 0, hi = 1000000000;
+  long lo = 0, hi = 0;
+  for (int i = 0; i < N; ++i) { if (hi < trees[i]) { hi = trees[i]; } }
   while (lo + 1 < hi) {
     long mid = lo + (hi - lo)/2;
 

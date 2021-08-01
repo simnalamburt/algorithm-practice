@@ -9,8 +9,7 @@ int scan_uint() {
 }
 
 int main() {
-  char buf[588902];
-  int W = 0;
+  char buf[588902], WBUF[400000];
   BUF = buf;
   read(0, buf, sizeof buf);
 
@@ -32,11 +31,12 @@ int main() {
     }
   }
 
+  int W = 0;
   for (int i = 0; i < cmds_len; ++i) {
-    buf[W++] = cmds[i];
-    buf[W++] = '\n';
+    WBUF[W++] = cmds[i];
+    WBUF[W++] = '\n';
   }
-  write(1, buf, W);
+  write(1, WBUF, W);
   _exit(0);
 
 IMPOSSIBLE:

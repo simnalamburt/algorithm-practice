@@ -1,18 +1,28 @@
-#include <unistd.h>
+#pragma GCC optimize("O4,unroll-loops")
+#pragma GCC target("arch=haswell")
+#define unlikely(x) __builtin_expect((x), 0)
 
-char *BUF;
-int scan_uint() {
-  static int C = 0;
+#include <unistd.h>
+#define BUF_SIZE (1024*16)
+
+static char *BUF;
+static inline int scan_uint() {
+  static int C = BUF_SIZE;
+  int remain = BUF_SIZE - C;
+  if (unlikely(remain <= 15)) {
+    for (int i = 0; i < remain; ++i) { BUF[i] = BUF[C + i]; }
+    read(0, BUF + remain, BUF_SIZE - remain);
+    C = 0;
+  }
+
   int n = 0, c;
   while ((c = BUF[C++]) >= '-') { n = 10*n + c - '0'; }
   return n;
 }
 
 int main() {
-  char buf[588902];
-  int W = 0;
+  char buf[BUF_SIZE];
   BUF = buf;
-  read(0, buf, sizeof buf);
 
   int n = scan_uint();
   int stack[n], stack_len = 0;
@@ -32,11 +42,13 @@ int main() {
     }
   }
 
+  int W = 0;
   for (int i = 0; i < cmds_len; ++i) {
-    buf[W++] = cmds[i];
-    buf[W++] = '\n';
+    if (unlikely(W + 2 >= BUF_SIZE)) { write(1, BUF, W); W = 0; }
+    BUF[W++] = cmds[i];
+    BUF[W++] = '\n';
   }
-  write(1, buf, W);
+  write(1, BUF, W);
   _exit(0);
 
 IMPOSSIBLE:

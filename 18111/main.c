@@ -33,10 +33,14 @@ int main() {
   }
 
   //
-  // Find min using bisect
+  // Find lower bound and upper bound
   //
-  int lo = 0;
-  int hi = 257;
+  int lo = 0, hi = 257;
+  for (int i = 0; i < 257; ++i) { if (HEIGHTS[i]) { lo = i; break; } }
+  for (int i = 256; i >= 0; --i) { if (HEIGHTS[i]) { hi = i + 1; break; } }
+
+  // Perform binary search
+  //
   // Loop invariant:
   //   lo < hi
   //   lo is part of strictly monotonic decreasing sequence + global minimums

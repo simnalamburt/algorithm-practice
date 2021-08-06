@@ -2,17 +2,17 @@
 
 int B, HEIGHTS[257];
 
-int cost(int desired_height) {
-  int time_cost = 0, block_cost = 0;
-  for (int i = 0; i < 257; ++i) {
-    int count = HEIGHTS[i];
-    int diff = i - desired_height;
-    time_cost += (diff > 0 ? 2 : -1) * diff * count;
-    block_cost -= diff * count;
-  }
+int cost(int target) {
+  int get = 0, used = 0;
+  for (int i = 0; i < target; ++i) { used += (target - i) * HEIGHTS[i]; }
+  for (int i = target + 1; i < 257; ++i) { get += (i - target) * HEIGHTS[i]; }
+
+  int block_cost = used - get;
+  int time_cost = used + 2*get;
+
   if (block_cost > B) {
     // Use ordered upper bound to make bisect work properly
-    return 2100000000 + desired_height;
+    return 2100000000 + target;
   }
   return time_cost;
 }

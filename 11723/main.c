@@ -1,7 +1,12 @@
 #include <stdio.h>
+#include <unistd.h>
+#define WBUF_SIZE (1024 * 512)
 
 char BUF[64];
 int C;
+
+char WBUF[WBUF_SIZE];
+int W;
 
 int scan_uint() {
   int n = 0, c;
@@ -31,7 +36,9 @@ int main() {
       C += 6;
       int x = scan_uint();
 
-      printf("%d\n", !!(bitset & (1 << x)));
+      WBUF[W++] = (bitset & (1 << x)) ? '1' : '0';
+      WBUF[W++] = '\n';
+      if (W >= WBUF_SIZE) { write(1, WBUF, W); W = 0; }
     } else if (BUF[C] == 't') { // toggle
       C += 7;
       int x = scan_uint();
@@ -47,4 +54,6 @@ int main() {
       bitset = 0x001FFFFE;
     }
   }
+
+  write(1, WBUF, W);
 }

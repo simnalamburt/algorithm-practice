@@ -4,8 +4,8 @@ Algorithm practice
 My competitive programming practice.
 
 #### 귀찮아서 1등 안먹은거
-- 1620
-- 1764
+- 1620 (C로 해시테이블 짜기 귀찮음)
+- 1764 (C로 해시테이블 짜기 귀찮음)
 
 #### 풀다만거 목록
 - CLOCKSYNC: 브루트포싱으로 구현했고, 더 좋은 시간복잡도 알고있는데 구현 아직 안했음

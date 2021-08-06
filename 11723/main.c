@@ -1,6 +1,6 @@
 #include <unistd.h>
-#define BUF_SIZE (1024 * 1024 * 2)
-#define WBUF_SIZE (1024 * 512)
+#define BUF_SIZE (1024 * 1024)
+#define WBUF_SIZE (1024 * 256)
 
 char BUF[BUF_SIZE];
 int C = BUF_SIZE;
@@ -22,7 +22,8 @@ int scan_uint() {
 char WBUF[WBUF_SIZE];
 int W;
 
-int main() {
+int main() { }
+int __libc_start_main() {
   buffer();
   int M = scan_uint();
 
@@ -63,4 +64,5 @@ int main() {
   }
 
   write(1, WBUF, W);
+  _exit(0);
 }

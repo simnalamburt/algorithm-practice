@@ -33,12 +33,13 @@ int __libc_start_main() {
 
   u128 visited = 0;
 
-  int tasks[1000] = {1}, top = 1;
-  while (top) {
-    int task = tasks[--top];
+  u128 tasks = 0x2;
+  while (tasks) {
+    int task = 0;
+    for (u128 t = tasks; !(t & 1); ++task, t >>= 1) { }
+    tasks &= ~(I << task);
     visited |= (I << task);
-    u128 G = graph[task] & ~visited;
-    for (int i = 1; i <= V; ++i) { if (G & (I << i)) { tasks[top++] = i; } }
+    tasks |= graph[task] & ~visited;
   }
 
   int count = -1;

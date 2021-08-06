@@ -15,24 +15,18 @@ void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
+int solve(int i) {
+  if (i <= 1) { return 0; }
+  int a = solve(i/3) + i%3, b = solve(i/2) + i%2;
+  return (a < b ? a : b) + 1;
+}
+
 int main() { }
-
 int __libc_start_main() {
-  char buf[99];
+  char buf[9];
   BUF = WBUF = buf;
-  read(0, buf, 99);
-
-  int N = scan_uint();
-  int DP[N + 1];
-  DP[0] = DP[1] = 0;
-  for (int i = 2; i <= N; ++i) {
-    int min = DP[i - 1];
-    if (i%3 == 0 && min > DP[i/3]) { min = DP[i/3]; }
-    if (i%2 == 0 && min > DP[i/2]) { min = DP[i/2]; }
-    DP[i] = min + 1;
-  }
-
-  print_uint(DP[N]);
+  read(0, buf, 9);
+  print_uint(solve(scan_uint()));
   write(1, WBUF, W);
   _exit(0);
 }

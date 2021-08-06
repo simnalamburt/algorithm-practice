@@ -16,15 +16,15 @@ void print_uint(int n) {
 }
 
 typedef __uint128_t u128;
+u128 graph[128];
 
-int main() {
+int main() { }
+int __libc_start_main() {
   char buf[39609];
   BUF = WBUF = buf;
   read(0, buf, sizeof buf);
 
   int vertex_count = scan_uint(), edge_count = scan_uint();
-  u128 graph[vertex_count + 1];
-  for (int a = 1; a <= vertex_count; ++a) { graph[a] = 0; }
   for (int _ = 0; _ < edge_count; ++_) {
     u128 a = scan_uint(), b = scan_uint();
     graph[a] |= ((u128)1 << b);

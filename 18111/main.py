@@ -14,14 +14,11 @@ def cost(desired_height: int):
     for row in range(N):
         for col in range(M):
             diff = MAP[row][col] - desired_height
-            if diff == 0:
-                # 이미 원하는 높이임, 비용 없음
-                continue
-            elif diff > 0:
+            if diff > 0:
                 # 원하는 높이보다 높음, 깎아야함: 2초 소요, 블록 획득
                 time_cost += 2 * diff
                 block_cost -= diff
-            else:
+            elif diff < 0:
                 # 원하는 높이보다 낮음, 쌓아야함: 1초 소요, 블록 소모
                 time_cost += (-diff)
                 block_cost += (-diff)

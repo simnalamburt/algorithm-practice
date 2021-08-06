@@ -31,26 +31,23 @@ int main() {
     graph[b] |= ((u128)1 << a);
   }
 
-  _Bool visited[vertex_count + 1];
-  for (int i = 1; i <= vertex_count; ++i) { visited[i] = 0; }
+  u128 visited = 0;
 
   int tasks[1000], task_count = 0;
   tasks[task_count++] = 1;
   while (task_count) {
     int task = tasks[--task_count];
-    visited[task] = 1;
+    visited |= ((u128)1 << (u128)task);
     for (int i = 1; i <= vertex_count; ++i) {
-      if (!(graph[task] & ((u128)1 << (u128)i))) { continue; }
-      if (visited[i]) { continue; }
+      u128 mask = (u128)1 << (u128)i;
+      if (!(graph[task] & mask)) { continue; }
+      if (visited & mask) { continue; }
       tasks[task_count++] = i;
     }
   }
 
   int count = -1;
-  for (int i = 1; i <= vertex_count; ++i) {
-    if (!visited[i]) { continue; }
-    ++count;
-  }
+  for (; visited; visited >>= 1) { count += visited & 1; }
 
   print_uint(count);
   write(1, WBUF, W);

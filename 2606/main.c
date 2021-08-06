@@ -16,7 +16,7 @@ void print_uint(int n) {
 }
 
 typedef __uint128_t u128;
-u128 graph[128];
+u128 graph[128], I = 1;
 
 int main() { }
 int __libc_start_main() {
@@ -24,26 +24,21 @@ int __libc_start_main() {
   BUF = WBUF = buf;
   read(0, buf, sizeof buf);
 
-  int vertex_count = scan_uint(), edge_count = scan_uint();
-  for (int _ = 0; _ < edge_count; ++_) {
-    u128 a = scan_uint(), b = scan_uint();
-    graph[a] |= ((u128)1 << b);
-    graph[b] |= ((u128)1 << a);
+  int V = scan_uint(), E = scan_uint();
+  for (int _ = 0; _ < E; ++_) {
+    int a = scan_uint(), b = scan_uint();
+    graph[a] |= (I << b);
+    graph[b] |= (I << a);
   }
 
   u128 visited = 0;
 
-  int tasks[1000], task_count = 0;
-  tasks[task_count++] = 1;
-  while (task_count) {
-    int task = tasks[--task_count];
-    visited |= ((u128)1 << (u128)task);
-    for (int i = 1; i <= vertex_count; ++i) {
-      u128 mask = (u128)1 << (u128)i;
-      if (!(graph[task] & mask)) { continue; }
-      if (visited & mask) { continue; }
-      tasks[task_count++] = i;
-    }
+  int tasks[1000] = {1}, top = 1;
+  while (top) {
+    int task = tasks[--top];
+    visited |= (I << task);
+    u128 G = graph[task] & ~visited;
+    for (int i = 1; i <= V; ++i) { if (G & (I << i)) { tasks[top++] = i; } }
   }
 
   int count = -1;

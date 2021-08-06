@@ -1,7 +1,9 @@
+#pragma GCC optimize("O4,unroll-loops")
+#pragma GCC target("arch=haswell")
 #include <stdio.h>
 
-int B, HEIGHTS[257];
-int CACHE[257] = {
+static int B, HEIGHTS[257];
+static int CACHE[257] = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -21,7 +23,7 @@ int CACHE[257] = {
   -1
 };
 
-int cost(int target) {
+static int cost(int target) {
   if (CACHE[target] != -1) { return CACHE[target]; }
 
   int get = 0, used = 0;

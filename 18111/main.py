@@ -5,8 +5,8 @@ MAP = [
 
 def cost(desired_height: int):
     if desired_height > 256:
-        # 너무 높음
-        return float('inf')
+        # instead of inf, use ordered number
+        return 2100000000 + desired_height
 
     time_cost = 0
     block_cost = 0
@@ -25,36 +25,16 @@ def cost(desired_height: int):
 
     if block_cost > B:
         # 갖고있는 블록 수가 모자람, 불가능
-        return float('inf')
+        return 2100000000 + desired_height
 
     return time_cost
-
-
-#
-# 높이의 범위는 [0, 257), 이진탐색으로 가능한 가장 높은 높이 찾기
-#
-lo = 0
-hi = 257
-
-# Loop invariant:
-#   lo < hi
-#   cost(lo) < inf
-#   cost(hi) == inf
-while lo + 1 < hi:
-    mid = (lo + hi)//2
-    if cost(mid) == float('inf'):
-        hi = mid
-    else:
-        lo = mid
-
-upper_bound = hi
 
 
 #
 # 이진탐색으로 최소점 찾기
 #
 lo = 0
-hi = upper_bound
+hi = 257
 
 # cost(0..257)은 강한단조감소수열 + 여러개의 최소점 + 강한단조증가수열 임을 알
 # 수 있다.

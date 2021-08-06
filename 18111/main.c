@@ -1,10 +1,7 @@
 #include <stdio.h>
-#include <limits.h>
 
 int cost(int N, int M, int B, int MAP[N][M], int desired_height) {
-  if (desired_height > 256) {
-    return INT_MAX;
-  }
+  if (desired_height > 256) { goto FAILED; }
 
   int time_cost = 0;
   long block_cost = 0;
@@ -23,12 +20,12 @@ int cost(int N, int M, int B, int MAP[N][M], int desired_height) {
       }
     }
   }
-
-  if (block_cost > B) {
-    return INT_MAX;
-  }
-
+  if (block_cost > B) { goto FAILED; }
   return time_cost;
+
+FAILED:
+  // Use ordered upper bound to make bisect work properly
+  return 2100000000 + desired_height;
 }
 
 int main() {
@@ -41,32 +38,11 @@ int main() {
     }
   }
 
-  int lo, hi;
-
   //
-  // Find upper bound
+  // Find min using bisect
   //
-  lo = 0;
-  hi = 257;
-  // Loop invariant:
-  //   lo < hi
-  //   cost(lo) < INT_MAX
-  //   cost(hi) = INT_MAX
-  while (lo + 1 < hi) {
-    int mid = (lo + hi)/2;
-    if (cost(N, M, B, MAP, mid) < INT_MAX) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
-  }
-  int upper_bound = hi;
-
-  //
-  // Find min
-  //
-  lo = 0;
-  hi = upper_bound;
+  int lo = 0;
+  int hi = 257;
   // Loop invariant:
   //   lo < hi
   //   lo is part of strictly monotonic decreasing sequence + global minimums

@@ -15,19 +15,20 @@ void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
+typedef __uint128_t u128;
+
 int main() {
   char buf[39609];
   BUF = WBUF = buf;
   read(0, buf, sizeof buf);
 
   int vertex_count = scan_uint(), edge_count = scan_uint();
-  _Bool graph[vertex_count + 1][vertex_count + 1];
-  for (int a = 1; a <= vertex_count; ++a) {
-    for (int b = 1; b <= vertex_count; ++b) { graph[a][b] = 0; }
-  }
+  u128 graph[vertex_count + 1];
+  for (int a = 1; a <= vertex_count; ++a) { graph[a] = 0; }
   for (int _ = 0; _ < edge_count; ++_) {
-    int a = scan_uint(), b = scan_uint();
-    graph[a][b] = graph[b][a] = 1;
+    u128 a = scan_uint(), b = scan_uint();
+    graph[a] |= ((u128)1 << b);
+    graph[b] |= ((u128)1 << a);
   }
 
   _Bool visited[vertex_count + 1];
@@ -39,7 +40,7 @@ int main() {
     int task = tasks[--task_count];
     visited[task] = 1;
     for (int i = 1; i <= vertex_count; ++i) {
-      if (!graph[task][i]) { continue; }
+      if (!(graph[task] & ((u128)1 << (u128)i))) { continue; }
       if (visited[i]) { continue; }
       tasks[task_count++] = i;
     }

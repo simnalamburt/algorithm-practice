@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 
 int main() {
   int M;
@@ -11,22 +10,22 @@ int main() {
     scanf("%s", buf);
 
     int x;
-    if (strcmp(buf, "add") == 0) {
+    if (buf[0] == 'a' && buf[1] == 'd') {
       scanf("%d", &x);
       bitset |= (1 << x);
-    } else if (strcmp(buf, "remove") == 0) {
+    } else if (buf[0] == 'r') {
       scanf("%d", &x);
       bitset &= ~(1 << x);
-    } else if (strcmp(buf, "check") == 0) {
+    } else if (buf[0] == 'c') {
       scanf("%d", &x);
       printf("%d\n", !!(bitset & (1 << x)));
-    } else if (strcmp(buf, "toggle") == 0) {
+    } else if (buf[0] == 't') {
       scanf("%d", &x);
       bitset ^= (1 << x);
-    } else if (strcmp(buf, "all") == 0) {
-      bitset = 0x001FFFFE;
-    } else if (strcmp(buf, "empty") == 0) {
+    } else if (buf[0] == 'e') {
       bitset = 0;
+    } else {
+      bitset = 0x001FFFFE;
     }
   }
 }

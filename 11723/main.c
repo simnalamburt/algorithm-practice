@@ -1,12 +1,17 @@
-#include <stdio.h>
 #include <unistd.h>
+#define BUF_SIZE (1024 * 1024 * 2)
 #define WBUF_SIZE (1024 * 512)
 
-char BUF[64];
-int C;
+char BUF[BUF_SIZE];
+int C = BUF_SIZE;
 
-char WBUF[WBUF_SIZE];
-int W;
+void buffer() {
+  int diff = BUF_SIZE - C;
+  if (diff >= 32) { return; }
+  for (int i = 0; i < diff; ++i) { BUF[i] = BUF[C + i]; }
+  read(0, BUF + diff, BUF_SIZE - diff);
+  C = 0;
+}
 
 int scan_uint() {
   int n = 0, c;
@@ -14,14 +19,16 @@ int scan_uint() {
   return n;
 }
 
+char WBUF[WBUF_SIZE];
+int W;
+
 int main() {
-  fgets(BUF, sizeof BUF, stdin); C = 0;
+  buffer();
   int M = scan_uint();
 
   int bitset = 0;
   for (int _ = 0; _ < M; ++_) {
-    fgets(BUF, sizeof BUF, stdin); C = 0;
-
+    buffer();
     if (BUF[C] == 'a' && BUF[C+1] == 'd') { // add
       C += 4;
       int x = scan_uint();

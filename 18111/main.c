@@ -2,7 +2,7 @@
 #pragma GCC target("arch=haswell")
 #include <unistd.h>
 
-char BUF[1024 * 1024 * 32];
+char BUF[1000017];
 int scan_uint() {
   static int C = 0;
   int n = 0, c;

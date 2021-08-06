@@ -3,22 +3,18 @@
 int B, HEIGHTS[257];
 
 int cost(int desired_height) {
-  if (desired_height > 256) { goto FAILED; }
-
-  int time_cost = 0;
-  long block_cost = 0;
+  int time_cost = 0, block_cost = 0;
   for (int i = 0; i < 257; ++i) {
     int count = HEIGHTS[i];
     int diff = i - desired_height;
     time_cost += (diff > 0 ? 2 : -1) * diff * count;
     block_cost -= diff * count;
   }
-  if (block_cost > B) { goto FAILED; }
+  if (block_cost > B) {
+    // Use ordered upper bound to make bisect work properly
+    return 2100000000 + desired_height;
+  }
   return time_cost;
-
-FAILED:
-  // Use ordered upper bound to make bisect work properly
-  return 2100000000 + desired_height;
 }
 
 int main() {

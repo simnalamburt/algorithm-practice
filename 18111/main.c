@@ -1,6 +1,21 @@
 #pragma GCC optimize("O4,unroll-loops")
 #pragma GCC target("arch=haswell")
-#include <stdio.h>
+#include <unistd.h>
+
+char BUF[1024 * 1024 * 32];
+int scan_uint() {
+  static int C = 0;
+  int n = 0, c;
+  while ((c = BUF[C++]) >= '-') { n = 10*n + c - '0'; }
+  return n;
+}
+
+char *WBUF = BUF;
+int W = 0;
+void print_uint(int n) {
+  if (n/10) { print_uint(n/10); }
+  WBUF[W++] = '0' + n%10;
+}
 
 static int B, HEIGHTS[257];
 static int CACHE[257] = {
@@ -35,13 +50,15 @@ static int cost(int target) {
   return CACHE[target] = ret;
 }
 
-int main() {
-  int N, M;
-  scanf("%d%d%d", &N, &M, &B);
+int main() { }
+int __libc_start_main() {
+  read(0, BUF, sizeof BUF);
+
+  int N = scan_uint(), M = scan_uint();
+  B = scan_uint();
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < M; ++col) {
-      int height;
-      scanf("%d", &height);
+      int height = scan_uint();
       ++HEIGHTS[height];
     }
   }
@@ -67,5 +84,11 @@ int main() {
       hi = mid;
     }
   }
-  printf("%d %d\n", cost(lo), lo);
+
+  print_uint(cost(lo));
+  WBUF[W++] = ' ';
+  print_uint(lo);
+  WBUF[W++] = '\n';
+  write(1, WBUF, W);
+  _exit(0);
 }

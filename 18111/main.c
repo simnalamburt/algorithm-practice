@@ -1,24 +1,17 @@
 #include <stdio.h>
 
-int cost(int N, int M, int B, int MAP[N][M], int desired_height) {
+int B, HEIGHTS[257];
+
+int cost(int desired_height) {
   if (desired_height > 256) { goto FAILED; }
 
   int time_cost = 0;
   long block_cost = 0;
-
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < M; ++col) {
-      int diff = MAP[row][col] - desired_height;
-      if (diff > 0) {
-        // higher than desired_height
-        time_cost += 2 * diff;
-        block_cost -= diff;
-      } else if (diff < 0) {
-        // lower than desired_height
-        time_cost += (-diff);
-        block_cost += (-diff);
-      }
-    }
+  for (int i = 0; i < 257; ++i) {
+    int count = HEIGHTS[i];
+    int diff = i - desired_height;
+    time_cost += (diff > 0 ? 2 : -1) * diff * count;
+    block_cost -= diff * count;
   }
   if (block_cost > B) { goto FAILED; }
   return time_cost;
@@ -29,12 +22,13 @@ FAILED:
 }
 
 int main() {
-  int N, M, B;
+  int N, M;
   scanf("%d%d%d", &N, &M, &B);
-  int MAP[N][M];
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < M; ++col) {
-      scanf("%d", &MAP[row][col]);
+      int height;
+      scanf("%d", &height);
+      ++HEIGHTS[height];
     }
   }
 
@@ -49,11 +43,11 @@ int main() {
   //   hi is part of global minimums + strictly monotonic increasing sequence
   while (lo + 1 < hi) {
     int mid = (lo + hi)/2;
-    if (cost(N, M, B, MAP, mid - 1) >= cost(N, M, B, MAP, mid)) {
+    if (cost(mid - 1) >= cost(mid)) {
       lo = mid;
     } else {
       hi = mid;
     }
   }
-  printf("%d %d\n", cost(N, M, B, MAP, lo), lo);
+  printf("%d %d\n", cost(lo), lo);
 }

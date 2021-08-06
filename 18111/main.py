@@ -1,7 +1,10 @@
+HEIGHTS = [0]*257
+
 N, M, B = map(int, input().split())
-MAP = [
-    [*map(int, input().split())] for _ in range(N)
-]
+for _ in range(N):
+    for word in input().split():
+        height = int(word)
+        HEIGHTS[height] += 1
 
 def cost(desired_height: int):
     if desired_height > 256:
@@ -10,18 +13,10 @@ def cost(desired_height: int):
 
     time_cost = 0
     block_cost = 0
-
-    for row in range(N):
-        for col in range(M):
-            diff = MAP[row][col] - desired_height
-            if diff > 0:
-                # 원하는 높이보다 높음, 깎아야함: 2초 소요, 블록 획득
-                time_cost += 2 * diff
-                block_cost -= diff
-            elif diff < 0:
-                # 원하는 높이보다 낮음, 쌓아야함: 1초 소요, 블록 소모
-                time_cost += (-diff)
-                block_cost += (-diff)
+    for height, count in enumerate(HEIGHTS):
+        diff = height - desired_height
+        time_cost += (2 if diff > 0 else -1) * diff * count
+        block_cost -= diff * count
 
     if block_cost > B:
         # 갖고있는 블록 수가 모자람, 불가능

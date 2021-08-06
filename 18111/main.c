@@ -34,22 +34,17 @@ int cost(int target) {
 }
 
 int main() {
-  int N, M;
+  int N, M, min = 257, max = -1;
   scanf("%d%d%d", &N, &M, &B);
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < M; ++col) {
       int height;
       scanf("%d", &height);
       ++HEIGHTS[height];
+      if (height < min) { min = height; }
+      if (max < height) { max = height; }
     }
   }
-
-  //
-  // Find lower bound and upper bound
-  //
-  int lo = 0, hi = 257;
-  for (int i = 0; i < 257; ++i) { if (HEIGHTS[i]) { lo = i; break; } }
-  for (int i = 256; i >= 0; --i) { if (HEIGHTS[i]) { hi = i + 1; break; } }
 
   // Perform binary search
   //
@@ -57,6 +52,7 @@ int main() {
   //   lo < hi
   //   lo is part of strictly monotonic decreasing sequence + global minimums
   //   hi is part of global minimums + strictly monotonic increasing sequence
+  int lo = min, hi = max + 1;
   while (lo + 1 < hi) {
     int mid = (lo + hi)/2;
     if (cost(mid - 1) >= cost(mid)) {

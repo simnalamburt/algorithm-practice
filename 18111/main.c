@@ -1,5 +1,3 @@
-#pragma GCC optimize("O4,unroll-loops")
-#pragma GCC target("arch=haswell")
 #include <unistd.h>
 
 char BUF[1000017];
@@ -17,15 +15,14 @@ void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
-static int B, HEIGHTS[257];
-
-static int cost(int target) {
+int B, HEIGHTS[257];
+int cost(int target) {
   int get = 0, used = 0;
   for (int i = 0; i < target; ++i) { used += (target - i) * HEIGHTS[i]; }
   for (int i = target + 1; i < 257; ++i) { get += (i - target) * HEIGHTS[i]; }
   int ret = used <= B + get ?
     used + 2*get :
-    2100000000 + target; // Use ordered upper bound to make bisect work properly
+    2100000000 + target; // Use ordered upper bound to make binary searching work properly
   return ret;
 }
 
@@ -33,18 +30,10 @@ int main() { }
 int __libc_start_main() {
   read(0, BUF, sizeof BUF);
 
-  int N = scan_uint(), M = scan_uint();
-  B = scan_uint();
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < M; ++col) {
-      int height = scan_uint();
-      ++HEIGHTS[height];
-    }
-  }
+  int N = scan_uint(), M = scan_uint(); B = scan_uint();
+  for (int i = 0; i < N; ++i) { for (int j = 0; j < M; ++j) { ++HEIGHTS[scan_uint()]; } }
 
-  //
   // Find lower bound and upper bound
-  //
   int lo = 0, hi = 257;
   for (int i = 0; i < 257; ++i) { if (HEIGHTS[i]) { lo = i; break; } }
   for (int i = 256; i >= 0; --i) { if (HEIGHTS[i]) { hi = i + 1; break; } }
@@ -57,11 +46,7 @@ int __libc_start_main() {
   //   hi is part of global minimums + strictly monotonic increasing sequence
   while (lo + 1 < hi) {
     int mid = (lo + hi)/2;
-    if (cost(mid - 1) >= cost(mid)) {
-      lo = mid;
-    } else {
-      hi = mid;
-    }
+    *(cost(mid - 1) >= cost(mid) ? &lo : &hi) = mid;
   }
 
   print_uint(cost(lo));

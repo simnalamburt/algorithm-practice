@@ -21,7 +21,6 @@ void print_int(int n) {
 
 struct task { int r, c, n; } tasks[10000000];
 int MAP[1000][1000];
-_Bool visited[1000][1000];
 
 int main() {
   read(0, BUF, sizeof BUF);
@@ -30,11 +29,6 @@ int main() {
   for (int r = 0; r < H; ++r) {
     for (int c = 0; c < Width; ++c) {
       MAP[r][c] = scan_int();
-    }
-  }
-  for (int r = 0; r < H; ++r) {
-    for (int c = 0; c < Width; ++c) {
-      visited[r][c] = 0;
     }
   }
   int end = 0, begin = 0;
@@ -48,10 +42,9 @@ int main() {
   while (begin < end) {
     struct task t = tasks[begin++];
     int r = t.r, c = t.c, n = t.n;
-    if (visited[r][c] || MAP[r][c] == -1) {
+    if (n != 1 && MAP[r][c] != 0) {
       continue;
     }
-    visited[r][c] = 1;
     MAP[r][c] = n;
     if (r > 0 && MAP[r - 1][c] == 0) {
       tasks[end++] = (struct task) { .r = r - 1, .c = c, .n = n + 1 };

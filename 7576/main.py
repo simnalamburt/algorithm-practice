@@ -2,7 +2,6 @@
 W, H = map(int, input().split())
 MAP = [[*map(int, input().split())] for _ in range(H)]
 
-visited = [[False]*W for _ in range(H)]
 tasks = [
     (r, c, 1)
     for r in range(H)
@@ -12,9 +11,8 @@ tasks = [
 
 while tasks:
     r, c, n = tasks.pop(0)
-    if visited[r][c] or MAP[r][c] == -1:
+    if n != 1 and MAP[r][c] != 0:
         continue
-    visited[r][c] = True
     MAP[r][c] = n
     if r > 0:
         tasks.append((r - 1, c, n + 1))

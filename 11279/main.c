@@ -2,7 +2,7 @@
 #pragma GCC target("arch=haswell")
 #include <unistd.h>
 #define BUF_SIZE (1024 * 16)
-#define WBUF_SIZE (1024 * 16)
+#define WBUF_SIZE (1024 * 12)
 
 static char *BUF;
 static int scan_uint() {

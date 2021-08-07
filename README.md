@@ -9,6 +9,7 @@ My competitive programming practice.
 - 1931
 - 2630
 - 11399
+- 11724
 
 #### 풀다만거 목록
 - CLOCKSYNC: 브루트포싱으로 구현했고, 더 좋은 시간복잡도 알고있는데 구현 아직 안했음

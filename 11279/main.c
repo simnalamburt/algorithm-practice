@@ -1,9 +1,11 @@
+#pragma GCC optimize("O4,unroll-loops")
+#pragma GCC target("arch=haswell")
 #include <unistd.h>
 #define BUF_SIZE (1024 * 16)
 #define WBUF_SIZE (1024 * 16)
 
-char *BUF;
-int scan_uint() {
+static char *BUF;
+static int scan_uint() {
   static int C = BUF_SIZE;
 
   int diff = BUF_SIZE - C;
@@ -18,22 +20,22 @@ int scan_uint() {
   return n;
 }
 
-char *WBUF;
-int W = 0;
-void try_flush() {
+static char *WBUF;
+static int W = 0;
+static void try_flush() {
   int diff = WBUF_SIZE - W;
   if (diff >= 16) { return; }
   write(1, WBUF, W);
   W = 0;
 }
-void print_uint(int n) {
+static void print_uint(int n) {
   if (n/10) { print_uint(n/10); }
   WBUF[W++] = '0' + n%10;
 }
 
-int top;
+static int top;
 
-void heap_push(int heap[], int n) {
+static void heap_push(int heap[], int n) {
   int idx = top;
   heap[top++] = n;
 
@@ -51,7 +53,7 @@ void heap_push(int heap[], int n) {
   }
 }
 
-int heap_pop(int heap[]) {
+static int heap_pop(int heap[]) {
   int ret = heap[0];
   heap[0] = heap[top - 1];
   --top;

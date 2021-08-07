@@ -15,8 +15,9 @@ def heap_push(n: int) -> None:
             return
 
 def heap_pop() -> int:
-    heap[0], heap[-1] = heap[-1], heap[0]
-    ret = heap.pop()
+    ret = heap[0]
+    heap[0] = heap[-1]
+    heap.pop()
     size = len(heap)
 
     # Fix heap

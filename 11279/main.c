@@ -1,4 +1,5 @@
 #include <unistd.h>
+#define WBUF_SIZE (1024 * 64)
 
 char BUF[1100007];
 int scan_uint() {
@@ -8,8 +9,14 @@ int scan_uint() {
   return n;
 }
 
-char WBUF[1024 * 1024 * 32];
+char WBUF[WBUF_SIZE];
 int W = 0;
+void try_flush() {
+  int diff = WBUF_SIZE - W;
+  if (diff >= 16) { return; }
+  write(1, WBUF, W);
+  W = 0;
+}
 void print_uint(int n) {
   if (n/10) { print_uint(n/10); }
   WBUF[W++] = '0' + n%10;
@@ -76,6 +83,7 @@ int __libc_start_main() {
   for (int i = 0; i < N; ++i) {
     int x = scan_uint();
     if (x == 0) {
+      try_flush();
       print_uint(top > 0 ? heap_pop() : 0);
       WBUF[W++] = '\n';
     } else {

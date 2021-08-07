@@ -1,8 +1,8 @@
 #include <unistd.h>
-#define BUF_SIZE (1024 * 128)
-#define WBUF_SIZE (1024 * 64)
+#define BUF_SIZE (1024 * 16)
+#define WBUF_SIZE (1024 * 16)
 
-char BUF[BUF_SIZE];
+char *BUF;
 int scan_uint() {
   static int C = BUF_SIZE;
 
@@ -18,7 +18,7 @@ int scan_uint() {
   return n;
 }
 
-char WBUF[WBUF_SIZE];
+char *WBUF;
 int W = 0;
 void try_flush() {
   int diff = WBUF_SIZE - W;
@@ -31,9 +31,9 @@ void print_uint(int n) {
   WBUF[W++] = '0' + n%10;
 }
 
-int heap[100000], top;
+int top;
 
-void heap_push(int n) {
+void heap_push(int heap[], int n) {
   int idx = top;
   heap[top++] = n;
 
@@ -51,7 +51,7 @@ void heap_push(int n) {
   }
 }
 
-int heap_pop() {
+int heap_pop(int heap[]) {
   int ret = heap[0];
   heap[0] = heap[top - 1];
   --top;
@@ -86,15 +86,19 @@ int heap_pop() {
 
 int main() { }
 int __libc_start_main() {
-  int N = scan_uint();
+  char buf[BUF_SIZE], wbuf[WBUF_SIZE];
+  BUF = buf;
+  WBUF = wbuf;
+
+  int N = scan_uint(), heap[N];
   for (int i = 0; i < N; ++i) {
     int x = scan_uint();
     if (x == 0) {
       try_flush();
-      print_uint(top > 0 ? heap_pop() : 0);
+      print_uint(top > 0 ? heap_pop(heap) : 0);
       WBUF[W++] = '\n';
     } else {
-      heap_push(x);
+      heap_push(heap, x);
     }
   }
 

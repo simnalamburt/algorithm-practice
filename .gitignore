@@ -4,3 +4,6 @@ a.out
 
 # Pascal build results
 solution
+
+# Python
+__pycache__/

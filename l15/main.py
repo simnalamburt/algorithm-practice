@@ -1,6 +1,7 @@
 from solution import Solution
 
 print(Solution().threeSum([-1,0,1,2,-1,-4]))
+print(Solution().threeSum([-4,-2,-2,-2,0,1,2,2,2,3,3,4,4,6,6]))
 print(Solution().threeSum([1, 1, -2]))
 print(Solution().threeSum([0, 0, 0]))
 print(Solution().threeSum([1, 0, 0]))

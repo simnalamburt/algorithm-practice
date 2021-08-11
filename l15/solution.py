@@ -6,8 +6,8 @@ class Solution:
         nums.sort()
 
         nums_uniq = []
-        dup2 = set()
-        dup3 = set()
+        dup2 = []
+        is_zero_dup3 = False
 
         last_num = None
         last_num_count = 0
@@ -15,10 +15,10 @@ class Solution:
             if num == last_num:
                 last_num_count += 1
 
-                if last_num_count >= 2:
-                    dup2.add(last_num)
-                if last_num_count >= 3:
-                    dup3.add(last_num)
+                if last_num_count == 2:
+                    dup2.append(num)
+                elif last_num_count == 3 and num == 0:
+                    is_zero_dup3 = True
             else:
                 last_num = num
                 last_num_count = 1
@@ -31,21 +31,21 @@ class Solution:
         numsSet = set(nums)
 
         # triplets with different numbers
-        A = {
+        A = [
             (nums_uniq[i], nums_uniq[j], rest)
             for i in range(L)
             for j in range(i + 1, L)
             if (rest := -nums_uniq[i]-nums_uniq[j]) in numsSet and nums_uniq[j] < rest
-        }
+        ]
 
         # triplets with two same number and different one number
-        B = {
+        B = [
             (num, num, rest)
             for num in dup2
             if (rest := -2*num) in numsSet and num != rest
-        }
+        ]
 
         # triplets with three same number
-        C = [(0, 0, 0)] if 0 in dup3 else []
+        C = [(0, 0, 0)] if is_zero_dup3 else []
 
-        return [*A, *B, *C]
+        return A + B + C

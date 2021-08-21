@@ -1,10 +1,16 @@
 N = int(input())
-meetings = sorted(tuple(map(int, input().split())) for _ in range(N))
 
-next_meeting = float('inf')
+meetings = []
+for _ in range(N):
+    start, end = map(int, input().split())
+    meetings.append((start, end))
+meetings.sort(key=lambda pair:(pair[1], pair[0]))
+
+end_at = 0
 count = 0
-for start, end in reversed(meetings):
-    if end <= next_meeting:
-        next_meeting = start
+for start, end in meetings:
+    if end_at <= start:
+        end_at = end
         count += 1
+
 print(count)

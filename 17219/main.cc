@@ -7,7 +7,7 @@ using std::string;
 using std::unordered_map;
 
 namespace {
-  char BUF[6'300'014];
+  char *BUF;
   int C = 0;
   int scan_uint() {
     int n = 0, c;
@@ -15,7 +15,7 @@ namespace {
     return n;
   }
 
-  char WBUF[2'000'000];
+  char *WBUF;
   int W = 0;
   void print_uint(int n) {
     if (n/10) { print_uint(n/10); }
@@ -24,10 +24,13 @@ namespace {
 }
 
 int main() {
-  read(0, BUF, sizeof BUF);
+  char buf[6300014];
+  BUF = WBUF = buf;
+  read(0, buf, sizeof buf);
+
   int N = scan_uint(), M = scan_uint();
 
-  unordered_map<string, int> DB;
+  unordered_map<string, string> DB;
   DB.reserve(N*10);
   for (int i = 0; i < N; ++i) {
     int begin = C;
@@ -35,9 +38,12 @@ int main() {
     size_t len = C - 1 - begin;
     string site { &BUF[begin], len };
 
-    int idx = C;
+    begin = C;
     while (BUF[C++] != '\n') { }
-    DB[site] = idx;
+    len = C - 1 - begin;
+    string password { &BUF[begin], len };
+
+    DB[site] = password;
   }
   for (int i = 0; i < M; ++i) {
     int begin = C;
@@ -45,7 +51,7 @@ int main() {
     size_t len = C - 1 - begin;
     string site { &BUF[begin], len };
 
-    for (int i = DB[site]; BUF[i] != '\n'; ++i) { WBUF[W++] = BUF[i]; }
+    for (auto ch : DB[site]) { WBUF[W++] = ch; }
     WBUF[W++] = '\n';
   }
 

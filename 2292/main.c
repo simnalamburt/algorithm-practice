@@ -16,11 +16,10 @@ void print_uint(int n) {
 }
 
 int main() { }
-
 int __libc_start_main() {
   char buf[99];
   BUF = WBUF = buf;
-  read(0, buf, 99);
+  read(0, buf, sizeof buf);
 
   int N = scan_uint() - 1, i = 1;
   while (N > 0) { N -= i++*6; }

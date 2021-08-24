@@ -9,6 +9,7 @@ My competitive programming practice.
 - 1780
 - 1931
 - 2630
+- 5525
 - 7576
 - 7662
 - 9375 (C로 해시테이블 짜기 귀찮음)

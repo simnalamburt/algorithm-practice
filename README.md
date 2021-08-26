@@ -4,6 +4,7 @@ Algorithm practice
 My competitive programming practice.
 
 #### 귀찮아서 1등 안먹은거
+- 1541
 - 1620 (C로 해시테이블 짜기 귀찮음)
 - 1764 (C로 해시테이블 짜기 귀찮음)
 - 1780

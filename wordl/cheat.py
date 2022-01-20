@@ -11,8 +11,8 @@ def word_to_bitset(word: str) -> int:
 
 words = stdin.read().split("\n")
 
-cheats = ['their', 'would', 'fancy', 'speak', 'jumbo']
 cheats = ['width', 'curse', 'among', 'bulky'] # fjpqvxz
+cheats = ['qubit', 'wormy', 'slave', 'punch'] # dfgjkxz
 
 for word in words:
     if len(word) != 5:
@@ -24,7 +24,7 @@ for word in words:
     for cheat in cheats:
         mask |= word_to_bitset(cheat)
     new_count = bin(word_to_bitset(word) & ~mask).count('1')
-    if new_count < 1:
+    if new_count < 4:
         continue
 
     print(f'{word} ({new_count})')

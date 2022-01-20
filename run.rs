@@ -3,13 +3,16 @@
 //!
 //! xz -dc targets.xz | ./run > result
 //! ```
+//!
+//! ###### Reference
+//! - https://en.wikipedia.org/wiki/Set_cover_problem
 
 use crate::itertools::combinations;
 use std::io::{self, BufRead};
 use std::time::Instant;
 
 const TARGET_LENGTH: usize = 11;
-const TARGET_COUNT: usize = 4;
+const TARGET_COUNT: usize = 3;
 const BITSET_FULL: u32 = 0b11111111111111111111111111;
 
 fn main() -> io::Result<()> {
